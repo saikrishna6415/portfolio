@@ -5,6 +5,7 @@ import { motion, useAnimation, AnimatePresence, useScroll, useTransform } from "
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Maximize2, Cpu, Monitor, LayoutGrid, Laptop, Coffee, Headphones } from "lucide-react";
+import ImageReveal from "@/components/ImageReveal";
 
 export default function Workspace() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -209,6 +210,9 @@ export default function Workspace() {
                     alt={currentImage.alt}
                     fill
                     className="object-cover"
+                    loading="lazy"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={85}
                   />
                   
                   <motion.div 
@@ -369,12 +373,16 @@ export default function Workspace() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative w-full h-full flex items-center justify-center">
-                <Image
+                <ImageReveal
                   src={workspaceImages[modalImageIndex].src}
                   alt={workspaceImages[modalImageIndex].alt}
-                  fill
-                  className="object-contain"
-                />
+                  className="w-full h-full"
+                  revealDirection="center"
+                  overlayColor="rgba(59, 130, 246, 0.3)"
+                >
+                  <h3 className="text-2xl font-bold mb-2">{workspaceImages[modalImageIndex].title}</h3>
+                  <p className="text-lg opacity-90">{workspaceImages[modalImageIndex].description}</p>
+                </ImageReveal>
               </div>
               
               {/* Modal navigation */}

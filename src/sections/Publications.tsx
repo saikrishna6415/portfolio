@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { useState } from "react";
 import { ArrowUpRight, ExternalLink, BookOpen } from "lucide-react";
 import Link from "next/link";
+import InteractiveParticles from "@/components/InteractiveParticles";
 
 export default function Publications() {
   const [ref, inView] = useInView({
@@ -87,6 +88,12 @@ export default function Publications() {
     <section id="publications" className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-card/10 to-background">
       {/* Background gradient */}
       <div className="absolute inset-0 opacity-30">
+        <InteractiveParticles 
+          count={80}
+          colors={["#3b82f6", "#8b5cf6", "#6366f1", "#0ea5e9"]}
+          speed={0.3}
+          interactionDistance={120}
+        />
         <motion.div 
           className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[100px]"
           animate={{
@@ -294,41 +301,69 @@ export default function Publications() {
   );
 }
 
+// Update the publications array with the real articles
 const publications = [
   {
-    title: "Building Cross-Platform Apps with React Native",
-    date: "March 2023",
-    readTime: 8,
-    url: "https://medium.com/@saikrishnakotagiri/building-cross-platform-apps-react-native",
-    description: "A comprehensive guide to developing high-performance mobile applications that work seamlessly across iOS and Android platforms.",
-    fullDescription: "React Native has revolutionized mobile development by enabling developers to create native apps for both iOS and Android with a single codebase. In this comprehensive guide, I walk through the entire development process from setting up your environment to optimizing performance for production-ready applications. I cover best practices for state management, navigation patterns, and integrating with native modules when necessary. The article includes real-world examples from my experience building apps used by thousands of users, with practical tips for avoiding common pitfalls and ensuring a smooth user experience across different device types and screen sizes.",
-    tags: ["React Native", "Mobile Development", "JavaScript", "Cross-Platform"]
-  },
-  {
-    title: "Optimizing React Native Performance for Production Apps",
-    date: "July 2023",
-    readTime: 12,
-    url: "https://medium.com/@saikrishnakotagiri/optimizing-react-native-performance",
-    description: "Learn how to identify and resolve performance bottlenecks in React Native applications to create smoother user experiences.",
-    fullDescription: "Performance optimization is critical for ensuring a good user experience in production React Native applications. This article dives deep into techniques I've used to reduce startup time by 30% and improve overall responsiveness in complex apps. I cover memory management, rendering optimization with useMemo and useCallback, list virtualization techniques, image optimization strategies, and reducing bundle size. The guide includes tools and metrics for measuring performance improvements, with before-and-after comparisons from real projects. I also explore native optimization techniques like Hermes engine configuration and proper use of native modules when JavaScript performance isn't enough for demanding features.",
-    tags: ["Performance Optimization", "React Native", "Mobile", "JavaScript"]
-  },
-  {
-    title: "Integrating Health SDKs with React Native Applications",
-    date: "October 2023",
+    title: "LLM-Aided System Design: How AI Assistants Help Draft Architecture Patterns",
+    date: "2024",
     readTime: 10,
-    url: "https://medium.com/@saikrishnakotagiri/health-sdks-react-native",
-    description: "A practical guide to connecting health and fitness data from Apple HealthKit and Google Fit into your React Native applications.",
-    fullDescription: "Health and fitness apps require seamless integration with platform-specific health services like Apple HealthKit and Google Fit. This article provides a step-by-step guide for implementing these integrations in a React Native application, based on my experience developing a chronic health management app. I cover permission handling, data synchronization patterns, background updates, and creating a unified API that works across platforms. The guide includes code examples for reading and writing various health metrics, handling privacy concerns appropriately, and maintaining data consistency between the app and platform health stores. I also discuss testing strategies for health integrations, which can be particularly challenging due to the sensitive nature of health data.",
-    tags: ["HealthKit", "Google Fit", "React Native", "Mobile Health"]
+    url: "https://medium.com/@saikrishnakotagiri16/llm-aided-system-design-how-ai-assistants-help-draft-architecture-patterns-d633e2a7e8a4",
+    description: "Exploring how large language models can assist in creating robust software architecture designs with practical applications.",
+    fullDescription: "This article explores how AI assistants like ChatGPT and Claude can be leveraged to draft system architecture patterns. I discuss the benefits of using LLMs in the architecture design process, how they can help generate design alternatives, identify edge cases, and provide documentation. The guide includes practical examples, best practices, and limitations to consider when incorporating AI into your system design workflow.",
+    tags: ["System Design", "LLM", "AI", "Software Architecture", "DevOps"]
   },
   {
-    title: "Effective CI/CD Pipelines for Mobile Applications",
-    date: "January 2024",
+    title: "Building Intelligent AI Agents with n8n: A Practical Guide",
+    date: "2024",
+    readTime: 8,
+    url: "https://medium.com/@saikrishnakotagiri16/building-intelligent-ai-agents-with-n8n-a-practical-guide-90af853532e7",
+    description: "A step-by-step guide to creating AI agents using n8n automation workflows with practical implementation examples.",
+    fullDescription: "In this comprehensive guide, I demonstrate how to build intelligent AI agents using n8n's workflow automation platform. The article walks through creating agents that can perform complex tasks by orchestrating different AI capabilities and APIs. I cover the entire process from basic setup to advanced implementations, including examples of data processing, decision-making logic, and integration with external services to create fully functional autonomous agents.",
+    tags: ["Automation", "n8n", "AI Agents", "Workflow", "Integration"]
+  },
+  {
+    title: "Breaking the Performance Barrier: How We Optimised MongoDB Aggregation Queries",
+    date: "2023",
+    readTime: 12,
+    url: "https://medium.com/@saikrishnakotagiri16/breaking-the-performance-barrier-how-we-optimised-mongodb-aggregation-queries-42a4790268a9",
+    description: "Deep dive into performance optimization techniques for MongoDB aggregation pipelines with real-world examples and benchmarks.",
+    fullDescription: "This technical deep-dive explores advanced techniques for optimizing MongoDB aggregation queries. Based on real-world experience, I share how our team significantly improved query performance by restructuring aggregation pipelines, implementing strategic indexing, and using MongoDB's query profiling tools. The article includes before-and-after performance benchmarks, code examples, and a systematic approach to identifying and resolving performance bottlenecks in complex database operations.",
+    tags: ["MongoDB", "Database", "Performance", "Optimization", "Backend"]
+  },
+  {
+    title: "Why Microservices Should Own Their Data and How It Benefits You",
+    date: "2023",
     readTime: 9,
-    url: "https://medium.com/@saikrishnakotagiri/cicd-mobile-apps",
-    description: "How to set up automated testing, building, and deployment workflows for mobile applications using GitHub Actions and Fastlane.",
-    fullDescription: "Continuous Integration and Continuous Deployment (CI/CD) are essential for maintaining quality and speeding up release cycles in mobile application development. This article details the CI/CD pipeline I implemented for a React Native project, which reduced release preparation time by 70%. I explain how to configure GitHub Actions for automated testing on pull requests, setting up Fastlane for automated builds, and implementing both beta distribution through TestFlight/Firebase App Distribution and production deployment to the App Store and Google Play. The guide covers environment-specific configuration, secure credential management, and strategies for parallel processing to minimize pipeline execution time. I also include troubleshooting tips for common CI/CD issues specific to mobile app development.",
-    tags: ["CI/CD", "GitHub Actions", "Fastlane", "DevOps"]
+    url: "https://medium.com/@saikrishnakotagiri16/why-microservices-should-own-their-data-and-how-it-benefits-you-7c88d0b2e262",
+    description: "An exploration of the 'Database-per-Service' pattern in microservice architecture and its advantages for scalability and maintenance.",
+    fullDescription: "In this article, I advocate for the 'Database-per-Service' pattern in microservice architectures. Drawing from experience implementing this approach, I explain how data ownership by individual services leads to better isolation, reduced coupling, and improved scalability. The article discusses implementation strategies, challenges in data consistency, and practical solutions for managing distributed data while maintaining system integrity and performance.",
+    tags: ["Microservices", "Architecture", "Database Design", "Scalability", "DevOps"]
+  },
+  {
+    title: "Scaling React Native Apps: Best Practices",
+    date: "2022",
+    readTime: 11,
+    url: "https://medium.com/@saikrishnakotagiri16/scaling-react-native-apps-best-practices-4162aa779937",
+    description: "A comprehensive guide to building and scaling React Native applications while maintaining performance and code quality.",
+    fullDescription: "This comprehensive guide covers essential strategies for scaling React Native applications effectively. Drawing from my experience building large-scale production apps, I discuss architectural patterns, state management approaches, code organization, performance optimization techniques, and testing strategies. The article provides practical recommendations for teams facing the challenges of growing and maintaining complex React Native codebases while ensuring app performance and developer productivity.",
+    tags: ["React Native", "Mobile Development", "Scaling", "Performance", "Architecture"]
+  },
+  {
+    title: "Integrating React Native as an SDK Into an Existing iOS App",
+    date: "2022",
+    readTime: 10,
+    url: "https://medium.com/@saikrishnakotagiri16/integrating-react-native-as-an-sdk-into-a-existing-ios-app-f659cc1645a",
+    description: "A technical guide for iOS developers looking to incorporate React Native components into their native application.",
+    fullDescription: "This step-by-step guide demonstrates how to integrate React Native into an existing iOS application as a reusable SDK. I cover the entire process from initial setup to advanced implementation details, including Cocoapods integration, bridge configuration, module communication, and handling navigation between native and React Native components. The article addresses common challenges and provides practical solutions for developers looking to gradually adopt React Native in legacy iOS projects.",
+    tags: ["React Native", "iOS", "SDK", "Integration", "Mobile Development"]
+  },
+  {
+    title: "Using React Native as an SDK in Your Native Android App",
+    date: "2022",
+    readTime: 10,
+    url: "https://medium.com/stackademic/using-react-native-as-an-sdk-in-your-native-android-app-5c4b6b40ad5f",
+    description: "Learn how to embed React Native features into an existing Android native application through a modular SDK approach.",
+    fullDescription: "This technical article guides Android developers through the process of integrating React Native components into existing native applications. I provide a detailed walkthrough of creating a modular React Native SDK for Android, including Gradle configuration, JavaScript bundling, native module bridges, and handling component lifecycle within the native environment. The guide includes code examples, troubleshooting tips, and best practices for maintaining a hybrid app with optimal performance.",
+    tags: ["React Native", "Android", "SDK", "Integration", "Mobile Development"]
   }
 ]; 

@@ -6,6 +6,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, Github, Linkedin, Twitter } from "lucide-react";
 
+// Import the new components
+import GradientText from "@/components/GradientText";
+import AnimatedBackground from "@/components/AnimatedBackground";
+import MagneticButton from "@/components/MagneticButton";
+import AnimatedTypewriter from "@/components/AnimatedTypewriter";
+
 function getWindowSize() {
   if (typeof window === "undefined") return { width: 1200, height: 800 };
   return { width: window.innerWidth, height: window.innerHeight };
@@ -47,21 +53,20 @@ export default function Hero() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  const roles = [
+    "Full Stack Developer",
+    "React & React Native Expert",
+    "UI/UX Enthusiast",
+    "Performance Optimizer",
+    "Problem Solver"
+  ];
+
   return (
     <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background to-card opacity-80 z-0">
-        <motion.div 
-          className="absolute w-[800px] h-[800px] rounded-full bg-accent/10 blur-[120px]"
-          animate={{
-            x: mousePosition.x * 0.05,
-            y: mousePosition.y * 0.05,
-          }}
-          transition={{ type: "spring", damping: 50, stiffness: 100 }}
-        />
-      </div>
-      
-      {/* Animated particles */}
+      {/* Replace gradient background with AnimatedBackground */}
+      <AnimatedBackground className="opacity-70 z-0" />
+
+      {/* Keep your existing floating particles */}
       {particles.map((particle, i) => (
         <motion.div
           key={i}
@@ -103,30 +108,35 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <motion.div 
-                className="inline-block px-4 py-2 bg-accent/10 text-accent rounded-full font-medium mb-6"
+                className="inline-block px-4 py-2 bg-accent/10 rounded-full font-medium mb-6"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Senior Full Stack Developer
+                <AnimatedTypewriter
+                  phrases={roles}
+                  typingSpeed={80}
+                  deletingSpeed={40}
+                  className="text-accent"
+                />
               </motion.div>
             </motion.div>
 
-            <motion.h1 
-              className="text-4xl md:text-6xl xl:text-7xl font-bold text-primary leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              Crafting <span className="text-accent">Digital</span> Experiences That <span className="text-accent">Inspire</span>
-            </motion.h1>
+            <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold leading-tight">
+              <span className="text-primary">I Build </span>
+              <GradientText
+                text="Modern Digital Experiences"
+                className=""
+                gradientColors={["#3b82f6", "#8b5cf6", "#ec4899", "#3b82f6"]}
+              />
+            </h1>
 
-            <motion.p 
+            <motion.p
               className="text-xl text-secondary max-w-2xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
-              I build high-performance web and mobile applications with React, React Native, and modern backend technologies. Passionate about clean code, intuitive UX, and scalable architecture.
+              Full stack developer with expertise in <span className="text-accent font-medium">React</span>, <span className="text-accent font-medium">React Native</span>, and modern backend technologies. Focused on creating high-performance applications with exceptional user experiences.
             </motion.p>
 
             <motion.div 
@@ -135,23 +145,17 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              <motion.a 
-                href="#contact" 
-                className="px-8 py-4 bg-accent text-white font-medium rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all"
-                whileHover={{ scale: 1.05, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Let&apos;s Connect
-              </motion.a>
+              <MagneticButton href="#contact" magneticStrength={0.3}>
+                <div className="px-8 py-4 bg-accent text-white font-medium rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all">
+                  Let&apos;s Work Together
+                </div>
+              </MagneticButton>
 
-              <motion.a 
-                href="#about" 
-                className="px-8 py-4 bg-transparent border border-border text-primary font-medium rounded-lg hover:bg-card/50 transition-all"
-                whileHover={{ scale: 1.05, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Explore My Work
-              </motion.a>
+              <MagneticButton href="#about" magneticStrength={0.3}>
+                <div className="px-8 py-4 bg-transparent border border-border text-primary font-medium rounded-lg hover:bg-card/50 transition-all">
+                  View My Experience
+                </div>
+              </MagneticButton>
             </motion.div>
 
             <motion.div 
@@ -165,22 +169,22 @@ export default function Hero() {
                 { icon: <Linkedin size={20} />, href: "https://linkedin.com/in/saikrishna-kotagiri", label: "LinkedIn" },
                 { icon: <Twitter size={20} />, href: "https://twitter.com/name__is_sai", label: "Twitter" }
               ].map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
-                  aria-label={social.label}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {social.icon}
-                </motion.a>
+                <MagneticButton key={index} magneticStrength={0.6}>
+                  <motion.a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
+                    aria-label={social.label}
+                  >
+                    {social.icon}
+                  </motion.a>
+                </MagneticButton>
               ))}
             </motion.div>
           </motion.div>
 
+          {/* Rest of the component remains the same */}
           {/* Image container - spans 2 columns */}
           <motion.div 
             className="lg:col-span-2 flex justify-center items-center"
@@ -234,7 +238,7 @@ export default function Hero() {
               >
                 <Image
                   src="/images/profile.jpg"
-                  alt="Saikrishna Kotagiri"
+                  alt="Professional headshot of Saikrishna Kotagiri, a senior full stack developer, showing him smiling against a neutral background"
                   fill
                   style={{ objectFit: "cover" }}
                   className="rounded-full"

@@ -16,6 +16,29 @@ export default function Contact() {
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [fieldFocus, setFieldFocus] = useState<string | null>(null);
   
+  // Add validation state
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    subject?: string;
+    message?: string;
+  }>({});
+  
+  const [touched, setTouched] = useState<{
+    name: boolean;
+    email: boolean;
+    subject: boolean;
+    message: boolean;
+  }>({
+    name: false,
+    email: false,
+    subject: false,
+    message: false
+  });
+
+  // Add reference to name input
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  
   // Animations
   const [ref, inView] = useInView({
     triggerOnce: false,
@@ -48,13 +71,90 @@ export default function Contact() {
     }
   }, [inView, controls, buttonControls]);
 
+  // Auto-focus the name input field when section comes into view
+  useEffect(() => {
+    if (inView && nameInputRef.current) {
+      // Small delay to ensure animation completes first
+      const timer = setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [inView]);
+
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'name':
+        return value.trim().length < 2 
+          ? 'Name must be at least 2 characters' 
+          : '';
+      case 'email':
+        return !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) 
+          ? 'Please enter a valid email address' 
+          : '';
+      case 'subject':
+        return value.trim().length < 3 
+          ? 'Subject must be at least 3 characters' 
+          : '';
+      case 'message':
+        return value.trim().length < 10 
+          ? 'Message must be at least 10 characters' 
+          : '';
+      default:
+        return '';
+    }
+  };
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (touched[name as keyof typeof touched]) {
+      const errorMessage = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: errorMessage }));
+    }
+  };
+  
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFieldFocus(null);
+    
+    // Mark field as touched
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    // Validate on blur
+    const errorMessage = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: errorMessage }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validate all fields before submission
+    const newErrors = {
+      name: validateField('name', formData.name),
+      email: validateField('email', formData.email),
+      subject: validateField('subject', formData.subject),
+      message: validateField('message', formData.message)
+    };
+    
+    // Mark all fields as touched
+    setTouched({
+      name: true,
+      email: true,
+      subject: true,
+      message: true
+    });
+    
+    // Set errors
+    setErrors(newErrors);
+    
+    // Check if there are any errors
+    if (Object.values(newErrors).some(error => error !== '')) {
+      return; // Don't submit if there are validation errors
+    }
+    
     setFormStatus("submitting");
     
     try {
@@ -70,6 +170,14 @@ export default function Contact() {
       if (response.ok) {
         setFormStatus("success");
         setFormData({ name: "", email: "", subject: "", message: "" });
+        
+        // Reset touched state
+        setTouched({
+          name: false,
+          email: false,
+          subject: false,
+          message: false
+        });
         
         // Reset form after 5 seconds
         setTimeout(() => {
@@ -190,6 +298,15 @@ export default function Contact() {
     }
   };
 
+  const titleVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: [0.04, 0.62, 0.23, 0.98] }
+    }
+  };
+
   return (
     <section id="contact" className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-background to-card/10">
       {/* Floating particles */}
@@ -234,7 +351,15 @@ export default function Contact() {
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7 }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">Get In Touch</h2>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-primary mb-4"
+            variants={titleVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+          >
+            Ready to Start Your Next Project?
+          </motion.h2>
+          
           <motion.div 
             className="flex justify-center items-center mb-6"
             initial={{ width: 0, opacity: 0 }}
@@ -245,9 +370,35 @@ export default function Contact() {
             <div className="h-1 w-20 bg-accent rounded-full mx-1"></div>
             <div className="h-1 w-10 bg-accent rounded-full mx-1"></div>
           </motion.div>
-          <p className="max-w-2xl mx-auto text-lg text-secondary">
-            Let&apos;s discuss how I can help bring your ideas to life
-          </p>
+          
+          <motion.p 
+            className="max-w-2xl mx-auto text-lg text-secondary"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
+            Have a project in mind or need a technical consultant? Let&apos;s discuss how we can work together to create exceptional digital experiences.
+          </motion.p>
+        </motion.div>
+
+        {/* Add testimonial quote for social proof */}
+        <motion.div
+          className="mb-16 max-w-3xl mx-auto bg-card/50 p-6 rounded-xl border border-border-light"
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="text-4xl text-accent">&ldquo;</div>
+            <div>
+              <p className="text-lg italic text-secondary">
+                Saikrishna brought exceptional technical expertise to our project. His full-stack capabilities and attention to user experience made our application both powerful and intuitive. I highly recommend him for any technical challenge.
+              </p>
+              <p className="mt-3 font-medium text-primary">
+                — Engineering Director, Enterprise SaaS Company
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
@@ -321,7 +472,7 @@ export default function Contact() {
               </div>
               <div>
                 <h4 className="text-lg font-medium text-primary">Location</h4>
-                <p className="text-secondary">Mumbai, Maharashtra (Remote)</p>
+                <p className="text-secondary">Hyderabad, Telangana (Remote)</p>
               </div>
             </motion.div>
 
@@ -388,23 +539,60 @@ export default function Contact() {
                     htmlFor="name" 
                     className={`absolute left-4 transition-all duration-300 ${
                       fieldFocus === 'name' || formData.name 
-                        ? 'text-xs -top-2 text-accent bg-card px-2' 
+                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.name && touched.name ? 'text-red-500' : 'text-accent') 
                         : 'text-secondary top-3'
                     }`}
                   >
                     Name
                   </label>
                   <input
+                    ref={nameInputRef}
                     type="text"
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     onFocus={() => setFieldFocus('name')}
-                    onBlur={() => setFieldFocus(null)}
+                    onBlur={handleBlur}
                     required
-                    className="w-full px-4 py-3 bg-transparent border border-border focus:border-accent rounded-lg outline-none transition-all duration-300"
+                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
+                      errors.name && touched.name 
+                        ? 'border-red-400 focus:border-red-500' 
+                        : touched.name && !errors.name
+                        ? 'border-green-400 focus:border-green-500'
+                        : 'border-border focus:border-accent'
+                    }`}
                   />
+                  {/* Validation indicator */}
+                  {touched.name && (
+                    <motion.div 
+                      className="absolute right-3 top-3.5"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    >
+                      {errors.name ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </motion.div>
+                  )}
+                  {/* Error message */}
+                  {errors.name && touched.name && (
+                    <motion.p 
+                      className="text-red-500 text-xs mt-1 ml-1"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      {errors.name}
+                    </motion.p>
+                  )}
                 </motion.div>
 
                 <motion.div
@@ -415,7 +603,7 @@ export default function Contact() {
                     htmlFor="email" 
                     className={`absolute left-4 transition-all duration-300 ${
                       fieldFocus === 'email' || formData.email 
-                        ? 'text-xs -top-2 text-accent bg-card px-2' 
+                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.email && touched.email ? 'text-red-500' : 'text-accent') 
                         : 'text-secondary top-3'
                     }`}
                   >
@@ -428,12 +616,49 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     onFocus={() => setFieldFocus('email')}
-                    onBlur={() => setFieldFocus(null)}
+                    onBlur={handleBlur}
                     required
-                    className="w-full px-4 py-3 bg-transparent border border-border focus:border-accent rounded-lg outline-none transition-all duration-300"
+                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
+                      errors.email && touched.email 
+                        ? 'border-red-400 focus:border-red-500' 
+                        : touched.email && !errors.email
+                        ? 'border-green-400 focus:border-green-500'
+                        : 'border-border focus:border-accent'
+                    }`}
                   />
+                  {/* Validation indicator */}
+                  {touched.email && (
+                    <motion.div 
+                      className="absolute right-3 top-3.5"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    >
+                      {errors.email ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </motion.div>
+                  )}
+                  {/* Error message */}
+                  {errors.email && touched.email && (
+                    <motion.p 
+                      className="text-red-500 text-xs mt-1 ml-1"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      {errors.email}
+                    </motion.p>
+                  )}
                 </motion.div>
 
+                {/* Subject field */}
                 <motion.div
                   className="relative md:col-span-2"
                   variants={itemVariants}
@@ -442,7 +667,7 @@ export default function Contact() {
                     htmlFor="subject" 
                     className={`absolute left-4 transition-all duration-300 ${
                       fieldFocus === 'subject' || formData.subject 
-                        ? 'text-xs -top-2 text-accent bg-card px-2' 
+                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.subject && touched.subject ? 'text-red-500' : 'text-accent')
                         : 'text-secondary top-3'
                     }`}
                   >
@@ -455,12 +680,49 @@ export default function Contact() {
                     value={formData.subject}
                     onChange={handleChange}
                     onFocus={() => setFieldFocus('subject')}
-                    onBlur={() => setFieldFocus(null)}
+                    onBlur={handleBlur}
                     required
-                    className="w-full px-4 py-3 bg-transparent border border-border focus:border-accent rounded-lg outline-none transition-all duration-300"
+                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
+                      errors.subject && touched.subject 
+                        ? 'border-red-400 focus:border-red-500' 
+                        : touched.subject && !errors.subject
+                        ? 'border-green-400 focus:border-green-500'
+                        : 'border-border focus:border-accent'
+                    }`}
                   />
+                  {/* Validation indicator */}
+                  {touched.subject && (
+                    <motion.div 
+                      className="absolute right-3 top-3.5"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    >
+                      {errors.subject ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </motion.div>
+                  )}
+                  {/* Error message */}
+                  {errors.subject && touched.subject && (
+                    <motion.p 
+                      className="text-red-500 text-xs mt-1 ml-1"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      {errors.subject}
+                    </motion.p>
+                  )}
                 </motion.div>
 
+                {/* Message field */}
                 <motion.div
                   className="relative md:col-span-2"
                   variants={itemVariants}
@@ -469,7 +731,7 @@ export default function Contact() {
                     htmlFor="message" 
                     className={`absolute left-4 transition-all duration-300 ${
                       fieldFocus === 'message' || formData.message 
-                        ? 'text-xs -top-2 text-accent bg-card px-2' 
+                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.message && touched.message ? 'text-red-500' : 'text-accent')
                         : 'text-secondary top-3'
                     }`}
                   >
@@ -482,10 +744,46 @@ export default function Contact() {
                     value={formData.message}
                     onChange={handleChange}
                     onFocus={() => setFieldFocus('message')}
-                    onBlur={() => setFieldFocus(null)}
+                    onBlur={handleBlur}
                     required
-                    className="w-full px-4 py-3 bg-transparent border border-border focus:border-accent rounded-lg outline-none transition-all duration-300 resize-none"
+                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 resize-none ${
+                      errors.message && touched.message 
+                        ? 'border-red-400 focus:border-red-500' 
+                        : touched.message && !errors.message
+                        ? 'border-green-400 focus:border-green-500'
+                        : 'border-border focus:border-accent'
+                    }`}
                   />
+                  {/* Validation indicator */}
+                  {touched.message && (
+                    <motion.div 
+                      className="absolute right-3 top-3.5"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    >
+                      {errors.message ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </motion.div>
+                  )}
+                  {/* Error message */}
+                  {errors.message && touched.message && (
+                    <motion.p 
+                      className="text-red-500 text-xs mt-1 ml-1"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      {errors.message}
+                    </motion.p>
+                  )}
                 </motion.div>
 
                 <div className="md:col-span-2 flex justify-end">
@@ -522,14 +820,14 @@ export default function Contact() {
               <AnimatePresence>
                 {formStatus === "success" && (
                   <motion.div
-                    className="absolute -bottom-16 left-0 right-0 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center justify-center space-x-2"
+                    className="absolute -bottom-16 left-0 right-0 p-6 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center justify-center space-x-3"
                     variants={statusVariants}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                   >
-                    <CheckCircle size={18} />
-                    <span>Message sent successfully! I&apos;ll get back to you soon.</span>
+                    <CheckCircle size={20} />
+                    <span className="font-medium">Message received! I&apos;ll review your project details and get back to you within 24-48 hours.</span>
                   </motion.div>
                 )}
                 

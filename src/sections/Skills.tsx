@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useState } from "react";
+import FloatingCard from "@/components/FloatingCard";
 
 export default function Skills() {
   const [ref, inView] = useInView({
@@ -139,63 +140,60 @@ export default function Skills() {
                 </div>
               </div>
               
-              {/* Grid of skill cards */}
+              {/* Grid of skill cards - Replace with FloatingCard */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-6">
                 {category.skills.map((skill) => (
                   <motion.div
                     key={skill.name}
                     variants={skillCardVariants}
-                    whileHover="hover"
-                    className="relative bg-card rounded-xl p-6 border border-border-light shadow-lg overflow-hidden"
-                    onMouseEnter={() => setHoveredSkill(skill.name)}
-                    onMouseLeave={() => setHoveredSkill(null)}
+                    className="relative"
                   >
-                    {/* Background animation */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent rounded-xl"
-                      animate={{ 
-                        opacity: hoveredSkill === skill.name ? 1 : 0,
-                        x: hoveredSkill === skill.name ? 0 : -100
-                      }}
-                      transition={{ duration: 0.4 }}
-                    />
-                    
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-bold text-lg text-primary">{skill.name}</h4>
-                        <span className="text-accent font-medium">{skill.level}%</span>
+                    <FloatingCard
+                      className="bg-card rounded-xl p-6 border border-border-light shadow-lg overflow-hidden h-full"
+                      glareColor={`rgba(59, 130, 246, 0.2)`}
+                      depth={15}
+                    >
+                      <div className="relative z-10">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-bold text-lg text-primary">{skill.name}</h4>
+                          <span className="text-accent font-medium">{skill.level}%</span>
+                        </div>
+                        
+                        <motion.div 
+                          className="h-2 bg-border rounded-full overflow-hidden"
+                          variants={barContainerVariants}
+                        >
+                          <motion.div
+                            className="h-full bg-gradient-to-r from-accent to-accent-hover rounded-full"
+                            variants={barVariants}
+                            custom={skill.level}
+                          />
+                        </motion.div>
+                        
+                        <div className="mt-4 text-sm text-secondary">
+                          {skill.description}
+                        </div>
+                        
+                        {/* Skill tags - Add floating effect to these as well */}
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {skill.tags.map((tag, i) => (
+                            <motion.span
+                              key={i}
+                              className="inline-block px-2 py-1 bg-accent/10 text-accent text-xs rounded-full"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                              transition={{ delay: 0.5 + (i * 0.1) }}
+                              whileHover={{ 
+                                scale: 1.05,
+                                backgroundColor: "rgba(59, 130, 246, 0.2)"
+                              }}
+                            >
+                              {tag}
+                            </motion.span>
+                          ))}
+                        </div>
                       </div>
-                      
-                      <motion.div 
-                        className="h-2 bg-border rounded-full overflow-hidden"
-                        variants={barContainerVariants}
-                      >
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-accent to-accent-hover rounded-full"
-                          variants={barVariants}
-                          custom={skill.level}
-                        />
-                      </motion.div>
-                      
-                      <div className="mt-4 text-sm text-secondary">
-                        {skill.description}
-                      </div>
-                      
-                      {/* Skill tags */}
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {skill.tags.map((tag, i) => (
-                          <motion.span
-                            key={i}
-                            className="inline-block px-2 py-1 bg-accent/10 text-accent text-xs rounded-full"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                            transition={{ delay: 0.5 + (i * 0.1) }}
-                          >
-                            {tag}
-                          </motion.span>
-                        ))}
-                      </div>
-                    </div>
+                    </FloatingCard>
                   </motion.div>
                 ))}
               </div>
