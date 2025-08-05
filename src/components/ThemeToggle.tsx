@@ -64,14 +64,105 @@ export default function ThemeToggle() {
   }
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.9 }}
-      whileHover={{ scale: 1.1 }}
-      onClick={toggleTheme}
-      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-      className="p-2 rounded-full bg-card text-primary border border-border"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative"
     >
-      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-    </motion.button>
+      <motion.button
+        whileTap={{ scale: 0.8 }}
+        whileHover={{ scale: 1.1 }}
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+        className="relative p-3 rounded-full bg-gradient-to-br from-background to-card shadow-lg border border-border overflow-hidden"
+        style={{ 
+          boxShadow: theme === "light" 
+            ? "0 0 15px rgba(59, 130, 246, 0.3)" 
+            : "0 0 15px rgba(59, 130, 246, 0.5)" 
+        }}
+      >
+        <motion.div 
+          className="absolute inset-0 bg-accent opacity-10 rounded-full"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        
+        <motion.div
+          className="relative z-10"
+          initial={false}
+          animate={{ 
+            rotate: theme === "light" ? 0 : 180,
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            rotate: { type: "spring", stiffness: 200, damping: 10 },
+            scale: { duration: 1.5, repeat: Infinity }
+          }}
+        >
+          {theme === "light" ? (
+            <Sun size={22} className="text-primary" />
+          ) : (
+            <Moon size={22} className="text-primary" />
+          )}
+        </motion.div>
+        
+        {/* Animated stars (visible in dark mode) */}
+        {theme === "dark" && (
+          <>
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-white rounded-full"
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: [0, 0.8, 0],
+                  scale: [0.8, 1, 0.8]
+                }}
+                transition={{ 
+                  duration: 1.5 + Math.random(), 
+                  delay: Math.random() * 2,
+                  repeat: Infinity
+                }}
+                style={{ 
+                  top: `${15 + Math.random() * 70}%`,
+                  left: `${15 + Math.random() * 70}%`,
+                }}
+              />
+            ))}
+          </>
+        )}
+        
+        {/* Animated rays (visible in light mode) */}
+        {theme === "light" && (
+          <>
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute bg-accent/40 origin-center"
+                style={{
+                  width: '2px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: '-1px',
+                  marginTop: '-4px',
+                  transformOrigin: 'center bottom',
+                  transform: `rotate(${i * 45}deg) translateY(-15px)`,
+                }}
+                animate={{ 
+                  scaleY: [1, 1.5, 1],
+                }}
+                transition={{ 
+                  duration: 1.5,
+                  delay: i * 0.05, 
+                  repeat: Infinity,
+                }}
+              />
+            ))}
+          </>
+        )}
+      </motion.button>
+    </motion.div>
   );
 } 
