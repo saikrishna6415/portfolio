@@ -1,20 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, Github, Linkedin, Twitter } from "lucide-react";
 
+function getWindowSize() {
+  if (typeof window === "undefined") return { width: 1200, height: 800 };
+  return { width: window.innerWidth, height: window.innerHeight };
+}
+
+function generateParticles(count: number) {
+  const { width, height } = getWindowSize();
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    scale: Math.random() * 0.5 + 0.5,
+    width: Math.random() * 20 + 5,
+    height: Math.random() * 20 + 5,
+    opacity: Math.random() * 0.5 + 0.2,
+    duration: 20 + Math.random() * 30,
+    animX: [Math.random() * width, Math.random() * width, Math.random() * width],
+    animY: [Math.random() * height, Math.random() * height, Math.random() * height],
+  }));
+}
+
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
+  const [particles, setParticles] = useState(() => generateParticles(20));
+  const hasInitialized = useRef(false);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-    
+
     window.addEventListener("mousemove", handleMouseMove);
+
+    // Only generate particles on client after mount
+    if (!hasInitialized.current) {
+      setParticles(generateParticles(20));
+      hasInitialized.current = true;
+    }
+
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
@@ -33,36 +62,28 @@ export default function Hero() {
       </div>
       
       {/* Animated particles */}
-      {[...Array(20)].map((_, i) => (
+      {particles.map((particle, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full bg-accent/20"
           initial={{
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            scale: Math.random() * 0.5 + 0.5,
+            x: particle.x,
+            y: particle.y,
+            scale: particle.scale,
           }}
           animate={{
-            x: [
-              Math.random() * window.innerWidth,
-              Math.random() * window.innerWidth,
-              Math.random() * window.innerWidth,
-            ],
-            y: [
-              Math.random() * window.innerHeight,
-              Math.random() * window.innerHeight,
-              Math.random() * window.innerHeight,
-            ],
+            x: particle.animX,
+            y: particle.animY,
           }}
           transition={{
-            duration: 20 + Math.random() * 30,
+            duration: particle.duration,
             repeat: Infinity,
             repeatType: "reverse",
           }}
           style={{
-            width: `${Math.random() * 20 + 5}px`,
-            height: `${Math.random() * 20 + 5}px`,
-            opacity: Math.random() * 0.5 + 0.2,
+            width: `${particle.width}px`,
+            height: `${particle.height}px`,
+            opacity: particle.opacity,
           }}
         />
       ))}
