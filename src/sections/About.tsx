@@ -49,15 +49,32 @@ export default function About() {
               high-performance web and mobile applications across iOS, Android, and Web platforms using 
               React, React Native, Redux.
             </p>
+            
+            {/* Visual divider with icon */}
+            <div className="flex items-center justify-center my-8">
+              <div className="h-[1px] bg-border-light flex-1"></div>
+              <div className="mx-4 bg-accent/10 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <div className="h-[1px] bg-border-light flex-1"></div>
+            </div>
+            
             <p className="mb-6">
               Strong backend knowledge in Java (Spring Boot) and Node.js (Express), with experience using 
               cloud services (AWS S3, Lambda, Firebase) to deliver scalable full-stack solutions.
             </p>
-            <p className="mb-6">
-              Expert in development best practices including CI/CD (Jenkins, GitHub Actions), automated 
-              testing, and Agile methodologies; passionate about optimizing app performance (e.g., reducing 
-              load times by ~30 percentage) to enhance user experience for thousands of users.
-            </p>
+            
+            {/* Visual callout box */}
+            <div className="border-l-4 border-accent bg-accent/5 p-4 rounded my-8">
+              <p className="italic text-secondary">
+                &ldquo;Expert in development best practices including CI/CD (Jenkins, GitHub Actions), automated 
+                testing, and Agile methodologies; passionate about optimizing app performance (e.g., reducing 
+                load times by ~30%) to enhance user experience for thousands of users.&rdquo;
+              </p>
+            </div>
+            
             <p>
               Published technical articles on mobile development best practices and SDK integrations, 
               demonstrating thought leadership and cross-platform development expertise.
@@ -68,19 +85,22 @@ export default function About() {
             {stats.map((stat, index) => (
               <motion.div 
                 key={index}
-                className="p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border border-border-light"
+                className="p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border-light relative overflow-hidden group"
                 whileHover={{ y: -5 }}
               >
+                {/* Background decoration */}
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-accent/5 rounded-full transition-all duration-300 group-hover:scale-150 group-hover:bg-accent/10" />
+                
                 <motion.div 
-                  className="text-4xl text-accent mb-4 font-bold"
+                  className="text-4xl text-accent mb-4 font-bold relative"
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
                   transition={{ delay: index * 0.2, duration: 0.5, type: "spring" }}
                 >
                   {stat.value}
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2 text-primary">{stat.title}</h3>
-                <p className="text-muted">{stat.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-primary relative">{stat.title}</h3>
+                <p className="text-muted relative">{stat.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -97,12 +117,12 @@ const stats = [
     description: "Building responsive web and mobile applications"
   },
   {
-    value: "10+",
+    value: "20+",
     title: "Projects Completed",
     description: "Delivered on time with high user satisfaction"
   },
   {
-    value: "4+",
+    value: "8+",
     title: "Technical Articles",
     description: "Published on modern development practices"
   }

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { scrollToSection, initSmoothScrolling } from "@/utils/scrollTransition";
 
 const navItems = [
   { name: "Home", href: "#home" },
@@ -19,6 +20,7 @@ const navItems = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
   // Handle scroll effect
   useEffect(() => {
@@ -29,6 +31,61 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Initialize smooth scrolling
+  useEffect(() => {
+    const cleanup = initSmoothScrolling();
+    return cleanup;
+  }, []);
+  
+  // Handle active section tracking
+  useEffect(() => {
+    const observers: HTMLElement[] = [];
+    
+    const observerOptions = {
+      threshold: 0.3,
+      rootMargin: "-20% 0px -30% 0px"
+    };
+    
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          setActiveSection(sectionId);
+        }
+      });
+    };
+    
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+    // Observe all sections
+    navItems.forEach(item => {
+      const sectionId = item.href.replace('#', '');
+      const section = document.getElementById(sectionId);
+      if (section) {
+        observer.observe(section);
+        observers.push(section);
+      }
+    });
+    
+    return () => {
+      observers.forEach(section => {
+        observer.unobserve(section);
+      });
+    };
+  }, []);
+
+  // Handle link click with smooth scroll
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    const sectionId = href.replace('#', '');
+    scrollToSection(sectionId);
+    
+    // Close mobile menu if open
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  };
 
   return (
     <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
@@ -44,7 +101,11 @@ export default function Header() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Link href="#home" className="font-bold text-xl md:text-2xl text-primary">
+            <Link 
+              href="#home" 
+              className="font-bold text-xl md:text-2xl text-primary"
+              onClick={(e) => handleLinkClick(e, "#home")}
+            >
               Saikrishna<span className="text-accent">.</span>
             </Link>
           </motion.div>
@@ -65,9 +126,19 @@ export default function Header() {
               >
                 <Link
                   href={item.href}
-                  className="text-secondary hover:text-accent transition-colors duration-200"
+                  className={`text-secondary hover:text-accent transition-colors duration-200 relative ${
+                    activeSection === item.href.replace('#', '') ? 'text-accent' : ''
+                  }`}
+                  onClick={(e) => handleLinkClick(e, item.href)}
                 >
                   {item.name}
+                  {activeSection === item.href.replace('#', '') && (
+                    <motion.span
+                      className="absolute -bottom-1 left-0 w-full h-0.5 bg-accent"
+                      layoutId="activeSection"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </Link>
               </motion.div>
             ))}
@@ -81,6 +152,8 @@ export default function Header() {
               type="button"
               className="inline-flex items-center justify-center p-2 rounded-md text-secondary hover:text-primary"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               <span className="sr-only">{mobileMenuOpen ? 'Close menu' : 'Open menu'}</span>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -93,13 +166,14 @@ export default function Header() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
+            id="mobile-menu"
             className="md:hidden" 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="px-2 pt-2 pb-4 space-y-1 bg-card shadow-lg">
+            <div className="px-2 pt-2 pb-4 space-y-1 bg-background/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-border-light">
               {navItems.map((item, index) => (
                 <motion.div
                   key={item.name}
@@ -109,8 +183,10 @@ export default function Header() {
                 >
                   <Link
                     href={item.href}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-secondary hover:text-accent hover:bg-border-light"
-                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block px-3 py-2 rounded-md text-base font-medium text-secondary hover:text-accent hover:bg-border-light ${
+                      activeSection === item.href.replace('#', '') ? 'text-accent bg-border-light/50' : ''
+                    }`}
+                    onClick={(e) => handleLinkClick(e, item.href)}
                   >
                     {item.name}
                   </Link>

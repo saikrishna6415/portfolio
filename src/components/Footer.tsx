@@ -152,7 +152,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold text-primary mb-4">Contact</h4>
             <address className="not-italic space-y-3 text-secondary">
               <motion.p variants={linkVariants} custom={0}>
-                Mumbai, Maharashtra (Remote)
+                Hyderabad, Telangana (Remote)
               </motion.p>
               <motion.p variants={linkVariants} custom={1}>
                 <a 
@@ -186,32 +186,7 @@ export default function Footer() {
             © {currentYear} Saikrishna Kotagiri. All rights reserved.
           </motion.p>
           
-          <motion.div 
-            className="flex space-x-6"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-          >
-            <Link 
-              href="/privacy"
-              className="text-sm text-muted hover:text-accent transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link 
-              href="/terms"
-              className="text-sm text-muted hover:text-accent transition-colors"
-            >
-              Terms of Service
-            </Link>
-            <a 
-              href="#contact"
-              className="text-sm text-muted hover:text-accent transition-colors"
-            >
-              Contact
-            </a>
-          </motion.div>
+         
         </div>
       </div>
       
