@@ -28,11 +28,27 @@ export default function Contact() {
     e.preventDefault();
     setFormStatus("sending");
     
-    // Simulating form submission
-    setTimeout(() => {
-      setFormStatus("success");
-      setFormData({ name: "", email: "", message: "" });
-    }, 1500);
+    try {
+      // Replace 'YOUR_FORMSPREE_ENDPOINT' with your actual Formspree form ID
+      // e.g. 'https://formspree.io/f/xrgdkqbr'
+      const response = await fetch('https://formspree.io/f/xldlpbkq', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        setFormStatus("success");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        setFormStatus("error");
+      }
+    } catch (error) {
+      setFormStatus("error");
+      console.error("Error submitting form:", error);
+    }
   };
 
   return (

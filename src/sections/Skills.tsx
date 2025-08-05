@@ -14,7 +14,7 @@ const skillCategories = [
   },
   {
     title: "Cloud & DevOps",
-    skills: ["AWS (S3, EC2, Lambda, API Gateway)", "Firebase", "CI/CD (Jenkins, GitHub Actions, Fastlane)", "Docker", "Git"]
+    skills: ["AWS (S3, EC2, Lambda, API Gateway)", "Firebase", "CI/CD (GitHub Actions, Fastlane)", "Docker", "Git"]
   },
   {
     title: "Databases",

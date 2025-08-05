@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/context/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Saikrishna Kotagiri | Senior React Native Developer",
+  title: "Saikrishna Kotagiri | Senior Full Stack Developer",
   description: "Senior Full Stack Developer with expertise in React Native, React, Redux, and backend technologies",
+  icons: {
+    icon: '/images/profile.jpg',
+    apple: '/images/profile.jpg',
+  }
 };
 
 export default function RootLayout({
@@ -24,10 +29,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link rel="icon" href="/images/profile.jpg" sizes="any" />
+        <link rel="apple-touch-icon" href="/images/profile.jpg" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground transition-colors duration-300`}
       >
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

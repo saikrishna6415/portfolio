@@ -6,7 +6,7 @@ import { useInView } from "react-intersection-observer";
 export default function About() {
   const [ref, inView] = useInView({
     triggerOnce: true,
-    threshold: 0.2,
+    threshold: 0.1,
   });
 
   const containerVariants = {
@@ -14,17 +14,17 @@ export default function About() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.3
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6 }
+      transition: { duration: 0.8, ease: "easeOut" }
     }
   };
 
@@ -65,26 +65,45 @@ export default function About() {
           </motion.div>
 
           <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-              <div className="text-4xl text-blue-500 mb-4">5+</div>
-              <h3 className="text-xl font-semibold mb-2">Years of Experience</h3>
-              <p className="text-gray-600 dark:text-gray-400">Building responsive web and mobile applications</p>
-            </div>
-            
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-              <div className="text-4xl text-blue-500 mb-4">10+</div>
-              <h3 className="text-xl font-semibold mb-2">Projects Completed</h3>
-              <p className="text-gray-600 dark:text-gray-400">Delivered on time with high user satisfaction</p>
-            </div>
-            
-            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-              <div className="text-4xl text-blue-500 mb-4">4+</div>
-              <h3 className="text-xl font-semibold mb-2">Technical Articles</h3>
-              <p className="text-gray-600 dark:text-gray-400">Published on modern development practices</p>
-            </div>
+            {stats.map((stat, index) => (
+              <motion.div 
+                key={index}
+                className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                whileHover={{ y: -5 }}
+              >
+                <motion.div 
+                  className="text-4xl text-blue-500 mb-4 font-bold"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
+                  transition={{ delay: index * 0.2, duration: 0.5, type: "spring" }}
+                >
+                  {stat.value}
+                </motion.div>
+                <h3 className="text-xl font-semibold mb-2">{stat.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{stat.description}</p>
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
       </div>
     </section>
   );
-} 
+}
+
+const stats = [
+  {
+    value: "5+",
+    title: "Years of Experience",
+    description: "Building responsive web and mobile applications"
+  },
+  {
+    value: "10+",
+    title: "Projects Completed",
+    description: "Delivered on time with high user satisfaction"
+  },
+  {
+    value: "4+",
+    title: "Technical Articles",
+    description: "Published on modern development practices"
+  }
+]; 
