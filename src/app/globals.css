@@ -3,6 +3,45 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* Card and section backgrounds */
+  --card-bg: #f8f9fa;
+  --section-bg: #ffffff;
+  
+  /* Text colors */
+  --text-primary: #171717;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  
+  /* Accent colors */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  
+  /* Border colors */
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  
+  /* Card and section backgrounds */
+  --card-bg: #1f2937;
+  --section-bg: #111827;
+  
+  /* Text colors */
+  --text-primary: #f9fafb;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9ca3af;
+  
+  /* Accent colors */
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  
+  /* Border colors */
+  --border: #374151;
+  --border-light: #1f2937;
 }
 
 @theme inline {
@@ -13,14 +52,23 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.dark):not(.light) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --card-bg: #1f2937;
+    --section-bg: #111827;
+    --text-primary: #f9fafb;
+    --text-secondary: #e5e7eb;
+    --text-muted: #9ca3af;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --border: #374151;
+    --border-light: #1f2937;
   }
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
