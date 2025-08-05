@@ -29,7 +29,7 @@ export default function About() {
   };
 
   return (
-    <section id="about" className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+    <section id="about" className="py-16 md:py-24 bg-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           ref={ref}
@@ -39,11 +39,11 @@ export default function About() {
           className="space-y-12"
         >
           <motion.div variants={itemVariants} className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">About Me</h2>
-            <div className="w-20 h-1 bg-blue-500 mx-auto"></div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">About Me</h2>
+            <div className="w-20 h-1 bg-accent mx-auto"></div>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="max-w-3xl mx-auto text-lg">
+          <motion.div variants={itemVariants} className="max-w-3xl mx-auto text-lg text-secondary">
             <p className="mb-6">
               Senior Full Stack Developer (React / React Native) with 5+ years of experience building 
               high-performance web and mobile applications across iOS, Android, and Web platforms using 
@@ -68,19 +68,19 @@ export default function About() {
             {stats.map((stat, index) => (
               <motion.div 
                 key={index}
-                className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className="p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 border border-border-light"
                 whileHover={{ y: -5 }}
               >
                 <motion.div 
-                  className="text-4xl text-blue-500 mb-4 font-bold"
+                  className="text-4xl text-accent mb-4 font-bold"
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
                   transition={{ delay: index * 0.2, duration: 0.5, type: "spring" }}
                 >
                   {stat.value}
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2">{stat.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{stat.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-primary">{stat.title}</h3>
+                <p className="text-muted">{stat.description}</p>
               </motion.div>
             ))}
           </motion.div>

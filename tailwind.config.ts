@@ -13,6 +13,19 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        card: "var(--card-bg)",
+        section: "var(--section-bg)",
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
+        muted: "var(--text-muted)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          light: "var(--border-light)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)"],
