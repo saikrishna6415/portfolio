@@ -114,7 +114,6 @@ export default function ParallaxSection({ images, title, subtitle }: ParallaxSec
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen w-full overflow-hidden py-20 md:py-32"
     >
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
@@ -132,38 +131,15 @@ export default function ParallaxSection({ images, title, subtitle }: ParallaxSec
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xl text-secondary max-w-2xl mx-auto">
+            <p className="text-xl text-secondary max-w-2xl text-center mx-auto">
               {subtitle}
             </p>
           )}
         </motion.div>
 
-        {/* Parallax images */}
-        <div className="relative h-[80vh] md:h-[90vh]">
-          {images.map((image, index) => (
-            <ParallaxImage 
-              key={index} 
-              image={image} 
-              index={index}
-              scrollYProgress={scrollYProgress} 
-            />
-          ))}
-        </div>
+     
       </div>
 
-      {/* Decorative elements */}
-      <DecorativeElement 
-        className="absolute top-[10%] left-[5%] w-20 h-20 rounded-full bg-accent/10 blur-xl"
-        scrollYProgress={scrollYProgress}
-        yRange={[0, -100]}
-        opacityRange={[0.3, 1, 0.3]}
-      />
-      <DecorativeElement 
-        className="absolute bottom-[20%] right-[10%] w-32 h-32 rounded-full bg-purple-500/10 blur-xl"
-        scrollYProgress={scrollYProgress}
-        yRange={[100, 0]}
-        opacityRange={[0.3, 0.8, 0.3]}
-      />
     </section>
   );
 } 

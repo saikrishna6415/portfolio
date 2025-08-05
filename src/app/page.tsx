@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Hero from "@/sections/Hero";
 import About from "@/sections/About";
+import Projects from "@/sections/Projects";
 
 // Lazy load non-critical sections
 const Experience = lazy(() => import("@/sections/Experience"));
@@ -29,6 +30,9 @@ export default function Home() {
         <About />
         <Suspense fallback={<SectionLoading />}>
           <Experience />
+        </Suspense>
+        <Suspense fallback={<SectionLoading />}>
+          <Projects />
         </Suspense>
         <Suspense fallback={<SectionLoading />}>
           <Skills />

@@ -61,6 +61,22 @@ export default function Hero() {
     "Problem Solver"
   ];
 
+  const iconContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.8,
+      },
+    },
+  };
+
+  const iconVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Replace gradient background with AnimatedBackground */}
@@ -122,9 +138,9 @@ export default function Hero() {
             </motion.div>
 
             <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold leading-tight">
-              <span className="text-primary">I Build </span>
+              <span className="text-primary">Transforming Ideas  </span>
               <GradientText
-                text="Modern Digital Experiences"
+                text="Into Seamless Experiences"
                 className=""
                 gradientColors={["#3b82f6", "#8b5cf6", "#ec4899", "#3b82f6"]}
               />
@@ -160,26 +176,28 @@ export default function Hero() {
 
             <motion.div 
               className="flex items-center gap-4 pt-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+              variants={iconContainerVariants}
+              initial="hidden"
+              animate="visible"
             >
               {[
                 { icon: <Github size={20} />, href: "https://github.com/saikrishna6415", label: "GitHub" },
                 { icon: <Linkedin size={20} />, href: "https://linkedin.com/in/saikrishna-kotagiri", label: "LinkedIn" },
                 { icon: <Twitter size={20} />, href: "https://twitter.com/name__is_sai", label: "Twitter" }
               ].map((social, index) => (
-                <MagneticButton key={index} magneticStrength={0.6}>
-                  <motion.a
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
-                    aria-label={social.label}
-                  >
-                    {social.icon}
-                  </motion.a>
-                </MagneticButton>
+                <motion.div key={index} variants={iconVariants}>
+                  <MagneticButton magneticStrength={0.6}>
+                    <motion.a
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
+                      aria-label={social.label}
+                    >
+                      {social.icon}
+                    </motion.a>
+                  </MagneticButton>
+                </motion.div>
               ))}
             </motion.div>
           </motion.div>
@@ -251,7 +269,7 @@ export default function Hero() {
       </div>
       
       {/* Scroll indicator */}
-      <motion.div 
+      {/* <motion.div 
         className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -270,7 +288,7 @@ export default function Hero() {
         >
           <ArrowDown className="text-accent" size={20} />
         </motion.div>
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 } 

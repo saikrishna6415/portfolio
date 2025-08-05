@@ -186,20 +186,7 @@ export default function Footer() {
             © {currentYear} Saikrishna Kotagiri. All rights reserved.
           </motion.p>
           
-          <motion.div
-            className="flex space-x-4 text-sm text-muted"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-          >
-            <Link href="#privacy" className="hover:text-accent transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="#terms" className="hover:text-accent transition-colors">
-              Terms of Service
-            </Link>
-          </motion.div>
+         
         </div>
       </div>
       

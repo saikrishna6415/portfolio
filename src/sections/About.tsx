@@ -117,12 +117,12 @@ const stats = [
     description: "Building responsive web and mobile applications"
   },
   {
-    value: "10+",
+    value: "20+",
     title: "Projects Completed",
     description: "Delivered on time with high user satisfaction"
   },
   {
-    value: "4+",
+    value: "8+",
     title: "Technical Articles",
     description: "Published on modern development practices"
   }

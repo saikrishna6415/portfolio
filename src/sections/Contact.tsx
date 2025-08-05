@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter } from "lucide-react";
 
 export default function Contact() {
   // Form state
@@ -381,25 +381,6 @@ export default function Contact() {
           </motion.p>
         </motion.div>
 
-        {/* Add testimonial quote for social proof */}
-        <motion.div
-          className="mb-16 max-w-3xl mx-auto bg-card/50 p-6 rounded-xl border border-border-light"
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="text-4xl text-accent">&ldquo;</div>
-            <div>
-              <p className="text-lg italic text-secondary">
-                Saikrishna brought exceptional technical expertise to our project. His full-stack capabilities and attention to user experience made our application both powerful and intuitive. I highly recommend him for any technical challenge.
-              </p>
-              <p className="mt-3 font-medium text-primary">
-                — Engineering Director, Enterprise SaaS Company
-              </p>
-            </div>
-          </div>
-        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
           {/* Contact Info */}
@@ -484,9 +465,9 @@ export default function Contact() {
               <h4 className="text-lg font-medium text-primary mb-4">Connect With Me</h4>
               <div className="flex space-x-4">
                 {[
-                  { name: "LinkedIn", href: "https://linkedin.com/in/saikrishna-kotagiri", icon: "ri-linkedin-fill" },
-                  { name: "GitHub", href: "https://github.com/saikrishna6415", icon: "ri-github-fill" },
-                  { name: "Twitter", href: "https://twitter.com/name__is_sai", icon: "ri-twitter-fill" }
+                  { name: "LinkedIn", href: "https://linkedin.com/in/saikrishna-kotagiri", icon: <Linkedin size={20} /> },
+                  { name: "GitHub", href: "https://github.com/saikrishna6415", icon: <Github size={20} /> },
+                  { name: "Twitter", href: "https://twitter.com/name__is_sai", icon: <Twitter size={20} /> }
                 ].map((social, index) => (
                   <motion.a
                     key={social.name}
@@ -504,7 +485,7 @@ export default function Contact() {
                     }}
                   >
                     <span className="sr-only">{social.name}</span>
-                    <i className={`${social.icon} text-xl`}></i>
+                    {social.icon}
                   </motion.a>
                 ))}
               </div>
