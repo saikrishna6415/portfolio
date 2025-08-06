@@ -6,7 +6,7 @@ import { Briefcase, Calendar } from "lucide-react";
 
 const experiences = [
   {
-    title: "Senior React Native Developer",
+    title: "Associate Solution Architect",
     company: "Lillia",
     location: "Mumbai, Maharashtra (Remote)",
     period: "June 2020 – Present",
