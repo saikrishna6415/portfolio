@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import CustomCursor from "@/components/CustomCursor";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -92,6 +93,8 @@ export default function RootLayout({
         <ScrollProgressBar showPercentage height={3} />
         <Providers>
           {children}
+          <Analytics />
+
           <CustomCursor />
         </Providers>
       </body>
