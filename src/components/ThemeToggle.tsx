@@ -54,7 +54,9 @@ export default function ThemeToggle() {
         setLocalTheme(storedTheme);
       } else if (prefersDark) {
         setLocalTheme("dark");
-      }
+      } else {
+        setLocalTheme("dark");
+      }//default to dark
     }
   }, []);
 
