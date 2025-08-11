@@ -14,7 +14,7 @@ export default function ScrollProgressBar({
   color = "#3b82f6",
   height = 4,
   showPercentage = false,
-  showToTopButton = true,
+  showToTopButton = false,
 }: ScrollProgressBarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const { scrollYProgress } = useScroll();

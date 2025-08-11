@@ -44,12 +44,26 @@ export default function Workspace() {
     setModalImageIndex(index);
     setIsModalOpen(true);
     document.body.style.overflow = "hidden";
+    // Move focus to close button when modal opens
+    setTimeout(() => {
+      const closeBtn = document.getElementById('workspace-modal-close');
+      closeBtn?.focus();
+    }, 0);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     document.body.style.overflow = "auto";
   };
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) closeModal();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isModalOpen]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const { clientX, clientY } = e;
@@ -363,6 +377,9 @@ export default function Workspace() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={closeModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="workspace-modal-title"
           >
             <motion.div
               className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center px-4"
@@ -380,7 +397,7 @@ export default function Workspace() {
                   revealDirection="center"
                   overlayColor="rgba(59, 130, 246, 0.3)"
                 >
-                  <h3 className="text-2xl font-bold mb-2">{workspaceImages[modalImageIndex].title}</h3>
+                  <h3 id="workspace-modal-title" className="text-2xl font-bold mb-2">{workspaceImages[modalImageIndex].title}</h3>
                   <p className="text-lg opacity-90">{workspaceImages[modalImageIndex].description}</p>
                 </ImageReveal>
               </div>
@@ -396,6 +413,7 @@ export default function Workspace() {
                 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label="Previous image"
               >
                 <ArrowLeft size={24} />
               </motion.button>
@@ -410,6 +428,7 @@ export default function Workspace() {
                 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label="Next image"
               >
                 <ArrowRight size={24} />
               </motion.button>
@@ -419,6 +438,8 @@ export default function Workspace() {
                 onClick={closeModal}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                id="workspace-modal-close"
+                aria-label="Close"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </motion.button>

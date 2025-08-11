@@ -6,8 +6,11 @@ import { useState } from "react";
 import { ArrowUpRight, ExternalLink, BookOpen } from "lucide-react";
 import Link from "next/link";
 import InteractiveParticles from "@/components/InteractiveParticles";
+import { useLowPowerMode, shouldEnableAnimation } from "@/utils/animationOptimizer";
 
 export default function Publications() {
+  const isLowPower = useLowPowerMode();
+  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
   const [ref, inView] = useInView({
     triggerOnce: false,
     threshold: 0.1,
@@ -87,30 +90,32 @@ export default function Publications() {
   return (
     <section id="publications" className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-card/10 to-background">
       {/* Background gradient */}
-      <div className="absolute inset-0 opacity-30">
-        <InteractiveParticles 
-          count={80}
-          colors={["#3b82f6", "#8b5cf6", "#6366f1", "#0ea5e9"]}
-          speed={0.3}
-          interactionDistance={120}
-        />
-        <motion.div 
-          className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[100px]"
-          animate={{
-            opacity: [0.3, 0.5, 0.3],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div 
-          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-accent/10 blur-[80px]"
-          animate={{
-            opacity: [0.4, 0.6, 0.4],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
-        />
-      </div>
+      {enableDecorative && (
+        <div className="absolute inset-0 opacity-30">
+          <InteractiveParticles 
+            count={80}
+            colors={["#3b82f6", "#8b5cf6", "#6366f1", "#0ea5e9"]}
+            speed={0.3}
+            interactionDistance={120}
+          />
+          <motion.div 
+            className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[100px]"
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-accent/10 blur-[80px]"
+            animate={{
+              opacity: [0.4, 0.6, 0.4],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{ duration: 10, repeat: Infinity, delay: 2 }}
+          />
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div

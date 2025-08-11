@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useLowPowerMode, shouldEnableAnimation } from "@/utils/animationOptimizer";
 
 export default function CustomCursor() {
   const [isVisible, setIsVisible] = useState(false);
   const [isPointer, setIsPointer] = useState(false);
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
+  const isLowPower = useLowPowerMode();
+  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
   
   // For smoother animation with slight lag
   const springConfig = { damping: 25, stiffness: 300 };
@@ -52,19 +55,10 @@ export default function CustomCursor() {
   return (
     <>
       {/* Hide the default cursor */}
-      <style jsx global>{`
-        body {
-          cursor: none;
-        }
-        
-        @media (max-width: 768px) {
-          body {
-            cursor: auto;
-          }
-        }
-      `}</style>
+      {/* Keep native cursor; only show overlay */}
       
       {/* Custom cursor - only show on desktop */}
+      {enableDecorative && (
       <div className="hidden md:block">
         {/* Outer cursor circle */}
         <motion.div
@@ -94,6 +88,7 @@ export default function CustomCursor() {
           transition={{ scale: { duration: 0.1 } }}
         />
       </div>
+      )}
     </>
   );
 } 

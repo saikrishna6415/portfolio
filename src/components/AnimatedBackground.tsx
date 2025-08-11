@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useLowPowerMode, shouldEnableAnimation } from "@/utils/animationOptimizer";
 
 interface AnimatedBackgroundProps {
   className?: string;
@@ -9,8 +10,11 @@ interface AnimatedBackgroundProps {
 
 export default function AnimatedBackground({ className = "" }: AnimatedBackgroundProps) {
   const [paths, setPaths] = useState<Array<{ d: string; color: string }>>([]);
+  const isLowPower = useLowPowerMode();
+  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
   
   useEffect(() => {
+    if (!enableDecorative) return;
     // Generate random wave paths for the SVG
     const generateWaves = () => {
       const newPaths = [];
@@ -61,10 +65,11 @@ export default function AnimatedBackground({ className = "" }: AnimatedBackgroun
     };
     
     generateWaves();
-  }, []);
+  }, [enableDecorative]);
   
   return (
     <div className={`absolute inset-0 w-full h-full overflow-hidden ${className}`}>
+      {enableDecorative && (
       <svg
         width="100%"
         height="100%"
@@ -100,6 +105,7 @@ export default function AnimatedBackground({ className = "" }: AnimatedBackgroun
           />
         ))}
       </svg>
+      )}
     </div>
   );
 } 

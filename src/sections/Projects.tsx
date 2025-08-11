@@ -92,7 +92,7 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Professional Experience
+            Projects
           </h2>
           <p className="text-xl text-secondary max-w-3xl mx-auto">
             A selection of projects that demonstrate my expertise in building robust and user-friendly applications.

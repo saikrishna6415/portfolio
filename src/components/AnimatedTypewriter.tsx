@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useLowPowerMode, shouldEnableAnimation } from "@/utils/animationOptimizer";
 
 interface AnimatedTypewriterProps {
   phrases: string[];
@@ -28,6 +29,8 @@ export default function AnimatedTypewriter({
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [isDone, setIsDone] = useState(false);
+  const isLowPower = useLowPowerMode();
+  const enableEssential = shouldEnableAnimation('essential', isLowPower);
   
   // Custom typing speeds per character
   const characterSpeedRef = useRef<Map<string, number>>(new Map([
@@ -43,6 +46,12 @@ export default function AnimatedTypewriter({
   // Handle the typing animation
   useEffect(() => {
     if (phrases.length === 0) return;
+    if (!enableEssential) {
+      // If motion reduced, just show first phrase statically
+      setDisplayedText(phrases[0] ?? "");
+      setIsDone(true);
+      return;
+    }
     
     let timeout: NodeJS.Timeout;
     const currentPhrase = phrases[phraseIndex];
@@ -90,7 +99,7 @@ export default function AnimatedTypewriter({
     }
     
     return () => clearTimeout(timeout);
-  }, [displayedText, phraseIndex, isTyping, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases, repeat, onComplete]);
+  }, [displayedText, phraseIndex, isTyping, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases, repeat, onComplete, enableEssential]);
   
   return (
     <div className={`inline-flex items-center ${className}`}>

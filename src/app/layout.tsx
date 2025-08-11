@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import CustomCursor from "@/components/CustomCursor";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -78,8 +79,27 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <link rel="icon" href="/images/profile.jpg" sizes="any" />
-        <link rel="apple-touch-icon" href="/images/profile.jpg" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+        {/* Prevent theme FOUC: set dark by default if no stored preference */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+  (function(){
+    try {
+      var stored = localStorage.getItem('theme');
+      var root = document.documentElement;
+      if (stored) {
+        root.classList.toggle('dark', stored === 'dark');
+        root.classList.toggle('light', stored === 'light');
+      } else {
+        root.classList.add('dark');
+        root.classList.remove('light');
+      }
+    } catch (e) {}
+  })();
+          `}}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground transition-colors duration-300`}
@@ -94,6 +114,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Analytics />
+          <SpeedInsights />
 
           <CustomCursor />
         </Providers>

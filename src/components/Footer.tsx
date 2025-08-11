@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail, ExternalLink } from "lucide-react";
+import { Github, Linkedin, Twitter, Mail } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -190,18 +190,7 @@ export default function Footer() {
         </div>
       </div>
       
-      {/* Back to top button */}
-      <motion.a
-        href="#home"
-        className="fixed bottom-8 right-8 p-3 bg-accent text-white rounded-full shadow-lg shadow-accent/20 z-50 opacity-80 hover:opacity-100"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 1 }}
-        whileHover={{ y: -5 }}
-        whileTap={{ scale: 0.9 }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-      </motion.a>
+      {/* Back to top button removed - handled by ScrollProgressBar if enabled */}
     </footer>
   );
 } 

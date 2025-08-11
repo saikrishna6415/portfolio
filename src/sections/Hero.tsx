@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowDown, Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 
 // Import the new components
 import GradientText from "@/components/GradientText";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import MagneticButton from "@/components/MagneticButton";
 import AnimatedTypewriter from "@/components/AnimatedTypewriter";
+import { useLowPowerMode, shouldEnableAnimation, getOptimizedParticleCount } from "@/utils/animationOptimizer";
 
 function getWindowSize() {
   if (typeof window === "undefined") return { width: 1200, height: 800 };
@@ -33,25 +33,18 @@ function generateParticles(count: number) {
 }
 
 export default function Hero() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [particles, setParticles] = useState(() => generateParticles(20));
+  const isLowPower = useLowPowerMode();
+  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
+  const optimizedParticleCount = getOptimizedParticleCount(isLowPower, 20);
+  const [particles, setParticles] = useState(() => generateParticles(optimizedParticleCount));
   const hasInitialized = useRef(false);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    // Only generate particles on client after mount
     if (!hasInitialized.current) {
-      setParticles(generateParticles(20));
+      setParticles(generateParticles(optimizedParticleCount));
       hasInitialized.current = true;
     }
-
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [optimizedParticleCount]);
 
   const roles = [
     "Full Stack Developer",
@@ -80,10 +73,10 @@ export default function Hero() {
   return (
     <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Replace gradient background with AnimatedBackground */}
-      <AnimatedBackground className="opacity-70 z-0" />
+      {enableDecorative && <AnimatedBackground className="opacity-70 z-0" />}
 
       {/* Keep your existing floating particles */}
-      {particles.map((particle, i) => (
+      {enableDecorative && particles.map((particle, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full bg-accent/20"
@@ -167,7 +160,7 @@ export default function Hero() {
                 </div>
               </MagneticButton>
 
-              <MagneticButton href="#about" magneticStrength={0.3}>
+              <MagneticButton href="#experience" magneticStrength={0.3}>
                 <div className="px-8 py-4 bg-transparent border border-border text-primary font-medium rounded-lg hover:bg-card/50 transition-all">
                   View My Experience
                 </div>
@@ -212,12 +205,14 @@ export default function Hero() {
           >
             <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px]">
               {/* Animated border */}
-              <motion.div 
-                className="absolute inset-0 rounded-full border-2 border-accent"
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, ease: "linear", repeat: Infinity }}
-              />
+              {enableDecorative && (
+                <motion.div 
+                  className="absolute inset-0 rounded-full border-2 border-accent"
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, ease: "linear", repeat: Infinity }}
+                />
+              )}
               
               {/* Animated dots */}
               {[0, 1, 2, 3].map((i) => (

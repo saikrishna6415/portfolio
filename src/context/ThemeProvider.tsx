@@ -12,27 +12,24 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   // Initialize theme from user preference or system preference
   useEffect(() => {
     setMounted(true);
     const storedTheme = localStorage.getItem("theme") as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
+    // const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (storedTheme) {
       setTheme(storedTheme);
       document.documentElement.classList.toggle("dark", storedTheme === "dark");
       document.documentElement.classList.toggle("light", storedTheme === "light");
-    } else if (prefersDark) {
-      setTheme("dark");
+    } else {
+      // Default to dark when no stored preference
+      const defaultTheme: Theme = "dark";
+      setTheme(defaultTheme);
       document.documentElement.classList.add("dark");
       document.documentElement.classList.remove("light");
-    } else {
-      setTheme("light");
-      document.documentElement.classList.add("light");
-      document.documentElement.classList.remove("dark");
     }
   }, []);
 
