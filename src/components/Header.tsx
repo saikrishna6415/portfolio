@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { scrollToSection, initSmoothScrolling } from "@/utils/scrollTransition";
 
+// Consolidated navigation items into logical groups
 const navItems = [
   { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
@@ -113,7 +114,7 @@ export default function Header() {
           
           {/* Desktop Navigation */}
           <motion.nav 
-            className="hidden md:flex items-center space-x-8"
+            className="hidden lg:flex items-center space-x-8" // Changed from md: to lg: for better mobile experience
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -147,7 +148,7 @@ export default function Header() {
           </motion.nav>
           
           {/* Mobile Menu Button and Theme Toggle */}
-          <div className="flex items-center space-x-4 md:hidden">
+          <div className="flex items-center space-x-4 lg:hidden"> {/* Changed from md: to lg: */}
             <ThemeToggle />
             <button
               type="button"
@@ -168,7 +169,7 @@ export default function Header() {
         {mobileMenuOpen && (
           <motion.div 
             id="mobile-menu"
-            className="md:hidden" 
+            className="lg:hidden" // Changed from md: to lg:
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}

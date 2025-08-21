@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter, Instagram, Mail } from "lucide-react";
 
 // Import the new components
 import GradientText from "@/components/GradientText";
@@ -35,7 +35,7 @@ function generateParticles(count: number) {
 export default function Hero() {
   const isLowPower = useLowPowerMode();
   const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
-  const optimizedParticleCount = getOptimizedParticleCount(isLowPower, 20);
+  const optimizedParticleCount = getOptimizedParticleCount(isLowPower, 15); // Reduced from 20
   const [particles, setParticles] = useState(() => generateParticles(optimizedParticleCount));
   const hasInitialized = useRef(false);
 
@@ -50,17 +50,16 @@ export default function Hero() {
     "Full Stack Developer",
     "React & React Native Expert",
     "UI/UX Enthusiast",
-    "Performance Optimizer",
-    "Problem Solver"
-  ];
+    "Performance Optimizer"
+  ]; // Reduced from 5 to 4
 
   const iconContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.8,
+        staggerChildren: 0.1, // Reduced from 0.2
+        delayChildren: 0.6, // Reduced from 0.8
       },
     },
   };
@@ -73,7 +72,7 @@ export default function Hero() {
   return (
     <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Replace gradient background with AnimatedBackground */}
-      {enableDecorative && <AnimatedBackground className="opacity-70 z-0" />}
+      {enableDecorative && <AnimatedBackground className="opacity-50 z-0" />} {/* Reduced opacity from 70 */}
 
       {/* Keep your existing floating particles */}
       {enableDecorative && particles.map((particle, i) => (
@@ -109,12 +108,12 @@ export default function Hero() {
             className="lg:col-span-3 space-y-8"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.1 }} // Reduced delay from 0.2
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.2 }} // Reduced delay from 0.3
             >
               <motion.div 
                 className="inline-block px-4 py-2 bg-accent/10 rounded-full font-medium mb-6"
@@ -130,20 +129,20 @@ export default function Hero() {
               </motion.div>
             </motion.div>
 
-            <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold leading-tight">
-              <span className="text-primary">Transforming Ideas  </span>
+            <h1 className="text-4xl md:text-5xl xl:text-6xl font-bold leading-tight"> {/* Reduced from 7xl to 6xl */}
+              <span className="text-primary">Building Digital </span>
               <GradientText
-                text="Into Seamless Experiences"
+                text="Solutions That Matter"
                 className=""
                 gradientColors={["#3b82f6", "#8b5cf6", "#ec4899", "#3b82f6"]}
               />
             </h1>
 
             <motion.p
-              className="text-xl text-secondary max-w-2xl"
+              className="text-lg md:text-xl text-secondary max-w-2xl" // Reduced base size from xl
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.3 }} // Reduced delay from 0.5
             >
               Full stack developer with expertise in <span className="text-accent font-medium">React</span>, <span className="text-accent font-medium">React Native</span>, and modern backend technologies. Focused on creating high-performance applications with exceptional user experiences.
             </motion.p>
@@ -152,7 +151,7 @@ export default function Hero() {
               className="flex flex-wrap gap-4 pt-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.4 }} // Reduced delay from 0.6
             >
               <MagneticButton href="#contact" magneticStrength={0.3}>
                 <div className="px-8 py-4 bg-accent text-white font-medium rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all">
@@ -176,34 +175,35 @@ export default function Hero() {
               {[
                 { icon: <Github size={20} />, href: "https://github.com/saikrishna6415", label: "GitHub" },
                 { icon: <Linkedin size={20} />, href: "https://linkedin.com/in/saikrishna-kotagiri", label: "LinkedIn" },
-                { icon: <Twitter size={20} />, href: "https://twitter.com/name__is_sai", label: "Twitter" }
+                { icon: <Twitter size={20} />, href: "https://twitter.com/name__is_sai", label: "Twitter" },
+                { icon: <Instagram size={20} />, href: "https://instagram.com/saikrishna.kotagiri", label: "Instagram" },
+                { icon: <Mail size={20} />, href: "mailto:saikrishnakotagiri16@gmail.com", label: "Email" },
+
               ].map((social, index) => (
                 <motion.div key={index} variants={iconVariants}>
-                  <MagneticButton magneticStrength={0.6}>
-                    <motion.a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
-                      aria-label={social.label}
-                    >
-                      {social.icon}
-                    </motion.a>
+                  <MagneticButton
+                    magneticStrength={0.3}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
+                    aria-label={social.label}
+                  >
+                    {social.icon}
                   </MagneticButton>
                 </motion.div>
               ))}
             </motion.div>
           </motion.div>
 
-          {/* Rest of the component remains the same */}
           {/* Image container - spans 2 columns */}
           <motion.div 
             className="lg:col-span-2 flex justify-center items-center"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.3 }} // Reduced delay from 0.5
           >
-            <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px]">
+            <div className="relative w-[250px] h-[250px] md:w-[350px] md:h-[350px] lg:w-[400px] lg:h-[400px]"> {/* Reduced mobile size from 300px to 250px */}
               {/* Animated border */}
               {enableDecorative && (
                 <motion.div 
@@ -262,28 +262,6 @@ export default function Hero() {
           </motion.div>
         </div>
       </div>
-      
-      {/* Scroll indicator */}
-      {/* <motion.div 
-        className="absolute bottom-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-      >
-        <motion.span 
-          className="text-secondary text-sm mb-2"
-          animate={{ y: [0, 5, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          Scroll Down
-        </motion.span>
-        <motion.div 
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <ArrowDown className="text-accent" size={20} />
-        </motion.div>
-      </motion.div> */}
     </section>
   );
 } 

@@ -9,6 +9,8 @@ interface MagneticButtonProps {
   magneticStrength?: number;
   onClick?: () => void;
   href?: string;
+  target?: string;
+  rel?: string;
 }
 
 export default function MagneticButton({
@@ -17,6 +19,8 @@ export default function MagneticButton({
   magneticStrength = 0.5,
   onClick,
   href,
+  target,
+  rel,
 }: MagneticButtonProps) {
   const [scope, animate] = useAnimate();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,7 +82,7 @@ export default function MagneticButton({
   );
   
   return href ? (
-    <a href={href} className="inline-block">
+    <a href={href} target={target} rel={rel} className="inline-block">
       {buttonContent}
     </a>
   ) : (
