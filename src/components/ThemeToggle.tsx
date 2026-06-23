@@ -18,7 +18,7 @@ export default function ThemeToggle() {
     const themeContext = useTheme();
     theme = themeContext.theme;
     toggleTheme = themeContext.toggleTheme;
-  } catch (e) {
+  } catch {
     // Fallback if ThemeProvider is not available
     theme = localTheme;
     toggleTheme = () => {

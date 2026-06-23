@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import Image from "next/image";
 import { Github, Linkedin, Twitter, Instagram, Mail, ArrowDown } from "lucide-react";
 import AnimatedTypewriter from "@/components/AnimatedTypewriter";

@@ -101,7 +101,7 @@ export default function Experience() {
           {/* Experience items */}
           <div className="space-y-10 pl-16 md:pl-20">
             {experiences.map((exp, index) => (
-              <ExperienceCard key={index} exp={exp} index={index} inView={inView} />
+              <ExperienceCard key={index} exp={exp} index={index} />
             ))}
           </div>
         </div>
@@ -113,11 +113,9 @@ export default function Experience() {
 function ExperienceCard({
   exp,
   index,
-  inView,
 }: {
   exp: typeof experiences[number];
   index: number;
-  inView: boolean;
 }) {
   const cardRef = useRef(null);
   const cardInView = useInView(cardRef, { once: true, margin: "-60px" });

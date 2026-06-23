@@ -163,7 +163,7 @@ export default function Projects() {
           }}
         >
           {projects.map((project, i) => (
-            <ProjectCard key={project.title} project={project} index={i} inView={inView} />
+            <ProjectCard key={project.title} project={project} index={i} />
           ))}
 
           {/* End spacer */}
@@ -188,11 +188,9 @@ export default function Projects() {
 function ProjectCard({
   project,
   index,
-  inView,
 }: {
   project: (typeof projects)[number];
   index: number;
-  inView: boolean;
 }) {
   const cardRef = useRef(null);
   const cardInView = useInView(cardRef, { once: true });

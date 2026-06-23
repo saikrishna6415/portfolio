@@ -105,11 +105,6 @@ interface ParallaxSectionProps {
 
 export default function ParallaxSection({ images, title, subtitle }: ParallaxSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
 
   return (
     <section
