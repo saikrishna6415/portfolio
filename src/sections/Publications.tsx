@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { BookOpen, Clock, ExternalLink, ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { Clock, ExternalLink, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import Link from "next/link";
 
 const publications = [

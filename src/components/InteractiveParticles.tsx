@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+
 
 // Import the animation optimizer utilities
 import { useLowPowerMode, getOptimizedParticleCount, shouldEnableAnimation } from "@/utils/animationOptimizer";
