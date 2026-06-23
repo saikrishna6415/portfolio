@@ -1,834 +1,384 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, useAnimation, AnimatePresence } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter } from "lucide-react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter, ArrowUpRight } from "lucide-react";
+
+type FormField = "name" | "email" | "subject" | "message";
+
+const contactInfo = [
+  {
+    icon: <Mail size={18} />,
+    label: "Email",
+    value: "saikrishnakotagiri16@gmail.com",
+    href: "mailto:saikrishnakotagiri16@gmail.com",
+    color: "#7c3aed",
+    glow: "rgba(124,58,237,0.25)",
+  },
+  {
+    icon: <Phone size={18} />,
+    label: "Phone",
+    value: "+91 9989966415",
+    href: "tel:+919989966415",
+    color: "#06b6d4",
+    glow: "rgba(6,182,212,0.25)",
+  },
+  {
+    icon: <MapPin size={18} />,
+    label: "Location",
+    value: "Hyderabad, India (Remote)",
+    href: null,
+    color: "#ec4899",
+    glow: "rgba(236,72,153,0.25)",
+  },
+];
+
+const socials = [
+  { icon: <Linkedin size={18} />, label: "LinkedIn", href: "https://linkedin.com/in/saikrishna-kotagiri" },
+  { icon: <Github size={18} />, label: "GitHub", href: "https://github.com/saikrishna6415" },
+  { icon: <Twitter size={18} />, label: "Twitter", href: "https://twitter.com/name__is_sai" },
+];
+
+function InputField({
+  id,
+  label,
+  type = "text",
+  value,
+  error,
+  touched,
+  onChange,
+  onFocus,
+  onBlur,
+  inputRef,
+  rows,
+}: {
+  id: FormField;
+  label: string;
+  type?: string;
+  value: string;
+  error?: string;
+  touched: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFocus: () => void;
+  onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+  rows?: number;
+}) {
+  const isValid = touched && !error && value.length > 0;
+  const isError = touched && !!error;
+
+  const baseStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "0.875rem 1rem",
+    background: "rgba(255,255,255,0.03)",
+    border: `1px solid ${isError ? "rgba(239,68,68,0.5)" : isValid ? "rgba(16,185,129,0.5)" : "rgba(255,255,255,0.08)"}`,
+    borderRadius: "0.75rem",
+    outline: "none",
+    color: "var(--text-primary)",
+    fontSize: "0.9rem",
+    fontFamily: "inherit",
+    transition: "all 0.2s ease",
+    resize: rows ? "none" as const : undefined,
+  };
+
+  const commonProps = {
+    id,
+    name: id,
+    value,
+    onChange,
+    onFocus,
+    onBlur,
+    required: true,
+    style: baseStyle,
+    onMouseEnter: (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (!isError && !isValid) (e.target as HTMLElement).style.borderColor = "rgba(124,58,237,0.4)";
+    },
+    onMouseLeave: (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (!isError && !isValid) (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+    },
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-xs font-mono tracking-wider uppercase" style={{ color: "var(--text-muted)" }}>
+        {label}
+      </label>
+      {rows ? (
+        <textarea {...commonProps} rows={rows}
+          style={{ ...baseStyle, resize: "none" }}
+        />
+      ) : (
+        <input
+          {...commonProps}
+          type={type}
+          ref={inputRef as React.RefObject<HTMLInputElement>}
+        />
+      )}
+      <AnimatePresence>
+        {isError && (
+          <motion.p
+            className="text-xs flex items-center gap-1"
+            style={{ color: "rgb(239,68,68)" }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+          >
+            <AlertCircle size={11} />
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Contact() {
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: ""
-  });
-  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [fieldFocus, setFieldFocus] = useState<string | null>(null);
-  
-  // Add validation state
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    subject?: string;
-    message?: string;
-  }>({});
-  
-  const [touched, setTouched] = useState<{
-    name: boolean;
-    email: boolean;
-    subject: boolean;
-    message: boolean;
-  }>({
-    name: false,
-    email: false,
-    subject: false,
-    message: false
-  });
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-80px" });
+  const nameRef = useRef<HTMLInputElement>(null);
 
-  // Add reference to name input
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  
-  // Animations
-  const [ref, inView] = useInView({
-    triggerOnce: false,
-    threshold: 0.2,
+  const [formData, setFormData] = useState<Record<FormField, string>>({
+    name: "", email: "", subject: "", message: "",
   });
-  
-  const controls = useAnimation();
-  const buttonControls = useAnimation();
-  const formRef = useRef<HTMLFormElement>(null);
-  
-  // Floating particles animation
-  const particleCount = 20;
-  const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, size: number, color: string}>>([]);
-  
-  useEffect(() => {
-    if (inView) {
-      controls.start("visible");
-      buttonControls.start("visible");
-      
-      // Generate particles
-      const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 10 + 5,
-        color: `hsl(${Math.random() * 60 + 200}, 80%, ${Math.random() * 30 + 60}%)`,
-      }));
-      
-      setParticles(newParticles);
-    }
-  }, [inView, controls, buttonControls]);
+  const [errors, setErrors] = useState<Partial<Record<FormField, string>>>({});
+  const [touched, setTouched] = useState<Record<FormField, boolean>>({
+    name: false, email: false, subject: false, message: false,
+  });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
-  // Auto-focus the name input field when section comes into view
-  useEffect(() => {
-    if (inView && nameInputRef.current) {
-      // Small delay to ensure animation completes first
-      const timer = setTimeout(() => {
-        nameInputRef.current?.focus();
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [inView]);
-
-  const validateField = (name: string, value: string): string => {
-    switch (name) {
-      case 'name':
-        return value.trim().length < 2 
-          ? 'Name must be at least 2 characters' 
-          : '';
-      case 'email':
-        return !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) 
-          ? 'Please enter a valid email address' 
-          : '';
-      case 'subject':
-        return value.trim().length < 3 
-          ? 'Subject must be at least 3 characters' 
-          : '';
-      case 'message':
-        return value.trim().length < 10 
-          ? 'Message must be at least 10 characters' 
-          : '';
-      default:
-        return '';
-    }
+  const validate = (field: FormField, val: string) => {
+    if (field === "name") return val.trim().length < 2 ? "At least 2 characters required" : "";
+    if (field === "email") return !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(val) ? "Valid email required" : "";
+    if (field === "subject") return val.trim().length < 3 ? "At least 3 characters required" : "";
+    if (field === "message") return val.trim().length < 10 ? "At least 10 characters required" : "";
+    return "";
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    if (touched[name as keyof typeof touched]) {
-      const errorMessage = validateField(name, value);
-      setErrors(prev => ({ ...prev, [name]: errorMessage }));
+    setFormData(p => ({ ...p, [name]: value }));
+    if (touched[name as FormField]) {
+      setErrors(p => ({ ...p, [name]: validate(name as FormField, value) }));
     }
   };
-  
+
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFieldFocus(null);
-    
-    // Mark field as touched
-    setTouched(prev => ({ ...prev, [name]: true }));
-    
-    // Validate on blur
-    const errorMessage = validateField(name, value);
-    setErrors(prev => ({ ...prev, [name]: errorMessage }));
+    setTouched(p => ({ ...p, [name]: true }));
+    setErrors(p => ({ ...p, [name]: validate(name as FormField, value) }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Validate all fields before submission
-    const newErrors = {
-      name: validateField('name', formData.name),
-      email: validateField('email', formData.email),
-      subject: validateField('subject', formData.subject),
-      message: validateField('message', formData.message)
-    };
-    
-    // Mark all fields as touched
-    setTouched({
-      name: true,
-      email: true,
-      subject: true,
-      message: true
-    });
-    
-    // Set errors
+    const fields: FormField[] = ["name", "email", "subject", "message"];
+    const newErrors = Object.fromEntries(fields.map(f => [f, validate(f, formData[f])])) as Record<FormField, string>;
+    setTouched({ name: true, email: true, subject: true, message: true });
     setErrors(newErrors);
-    
-    // Check if there are any errors
-    if (Object.values(newErrors).some(error => error !== '')) {
-      return; // Don't submit if there are validation errors
-    }
-    
-    setFormStatus("submitting");
-    
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    setStatus("submitting");
     try {
-      // Formspree integration
-      const response = await fetch("https://formspree.io/f/xldlpbkq", {
+      const res = await fetch("https://formspree.io/f/xldlpbkq", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      
-      if (response.ok) {
-        setFormStatus("success");
+      if (res.ok) {
+        setStatus("success");
         setFormData({ name: "", email: "", subject: "", message: "" });
-        
-        // Reset touched state
-        setTouched({
-          name: false,
-          email: false,
-          subject: false,
-          message: false
-        });
-        
-        // Reset form after 5 seconds
-        setTimeout(() => {
-          setFormStatus("idle");
-        }, 5000);
+        setTouched({ name: false, email: false, subject: false, message: false });
+        setTimeout(() => setStatus("idle"), 5000);
       } else {
-        setFormStatus("error");
-        setTimeout(() => {
-          setFormStatus("idle");
-        }, 5000);
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 5000);
       }
-    } catch (error) {
-      setFormStatus("error");
-      setTimeout(() => {
-        setFormStatus("idle");
-      }, 5000);
-    }
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }
-    }
-  };
-
-  const formVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 40,
-      scale: 0.95
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { 
-        duration: 0.8, 
-        ease: [0.04, 0.62, 0.23, 0.98],
-        delay: 0.2
-      }
-    }
-  };
-  
-  const buttonVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        duration: 0.5,
-        delay: 0.6
-      }
-    },
-    hover: { 
-      scale: 1.05,
-      boxShadow: "0px 5px 15px rgba(59, 130, 246, 0.3)",
-      transition: { duration: 0.3 }
-    },
-    tap: { 
-      scale: 0.95,
-      boxShadow: "0px 2px 5px rgba(59, 130, 246, 0.2)",
-      transition: { duration: 0.1 }
-    },
-    submitting: {
-      scale: [1, 0.95, 1],
-      transition: {
-        duration: 1.5,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  const contactInfoVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        delay: custom * 0.2 + 0.3,
-        duration: 0.7,
-        ease: [0.04, 0.62, 0.23, 0.98]
-      }
-    })
-  };
-  
-  const statusVariants = {
-    hidden: { opacity: 0, y: -10, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 500, 
-        damping: 15 
-      }
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      transition: { duration: 0.2 }
-    }
-  };
-
-  const titleVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: [0.04, 0.62, 0.23, 0.98] }
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 5000);
     }
   };
 
   return (
-    <section id="contact" className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-background to-card/10">
-      {/* Floating particles */}
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full opacity-40"
-          style={{
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            backgroundColor: particle.color,
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            filter: "blur(3px)",
-          }}
-          animate={{
-            x: [
-              Math.random() * 50 - 25,
-              Math.random() * 50 - 25,
-              Math.random() * 50 - 25,
-            ],
-            y: [
-              Math.random() * 50 - 25,
-              Math.random() * 50 - 25,
-              Math.random() * 50 - 25,
-            ],
-            opacity: [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: 10 + Math.random() * 20,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        />
-      ))}
+    <section id="contact" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--background)" }}>
+      {/* Ambient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] opacity-20"
+          style={{ background: "radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] opacity-10"
+          style={{ background: "radial-gradient(circle at 100% 100%, rgba(6,182,212,0.2) 0%, transparent 70%)" }} />
+      </div>
 
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10" ref={ref}>
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.7 }}
-        >
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold text-primary mb-4"
-            variants={titleVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-          >
-            Ready to Start Your Next Project?
-          </motion.h2>
-          
-          <motion.div 
-            className="flex justify-center items-center mb-6"
-            initial={{ width: 0, opacity: 0 }}
-            animate={inView ? { width: "auto", opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-          >
-            <div className="h-1 w-10 bg-accent rounded-full mx-1"></div>
-            <div className="h-1 w-20 bg-accent rounded-full mx-1"></div>
-            <div className="h-1 w-10 bg-accent rounded-full mx-1"></div>
-          </motion.div>
-          
-          <motion.p 
-            className="max-w-2xl mx-auto text-lg text-secondary"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-          >
-            Have a project in mind or need a technical consultant? Let&apos;s discuss how we can work together to create exceptional digital experiences.
-          </motion.p>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={sectionRef}>
+        {/* Section label */}
+        <motion.div className="section-label mb-6"
+          initial={{ opacity: 0, x: -20 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5 }}>
+          Get In Touch
         </motion.div>
 
+        <motion.h2 className="font-display font-bold mb-4 text-white"
+          style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
+          initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}>
+          Let&apos;s Build{" "}
+          <span className="bg-clip-text text-transparent"
+            style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}>
+            Something Great
+          </span>
+        </motion.h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Contact Info */}
-          <motion.div 
-            className="lg:col-span-2 space-y-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate={controls}
-          >
-            <motion.div
-              className="flex flex-col space-y-2"
-              variants={contactInfoVariants}
-              custom={0}
-            >
-              <h3 className="text-2xl font-bold text-primary mb-6">Contact Information</h3>
-              <p className="text-secondary mb-8">
-                Feel free to reach out through any of the channels below. I&apos;m always open to discussing new projects, creative ideas, or opportunities.
-              </p>
-            </motion.div>
+        <motion.p className="mb-14 max-w-xl text-base" style={{ color: "var(--text-secondary)" }}
+          initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 0.2 }}>
+          Have a project in mind or just want to chat? I&apos;m always open to new opportunities and creative collaborations.
+        </motion.p>
 
-            <motion.div 
-              className="flex items-start space-x-4"
-              variants={contactInfoVariants}
-              custom={1}
-            >
-              <div className="p-3 bg-accent/10 rounded-full">
-                <Mail className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <h4 className="text-lg font-medium text-primary">Email</h4>
-                <motion.a 
-                  href="mailto:saikrishnakotagiri16@gmail.com" 
-                  className="text-secondary hover:text-accent transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  saikrishnakotagiri16@gmail.com
-                </motion.a>
-              </div>
-            </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          {/* ── Left: Info panel ── */}
+          <motion.div className="lg:col-span-2 space-y-5"
+            initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7, delay: 0.2 }}>
 
-            <motion.div 
-              className="flex items-start space-x-4"
-              variants={contactInfoVariants}
-              custom={2}
-            >
-              <div className="p-3 bg-accent/10 rounded-full">
-                <Phone className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <h4 className="text-lg font-medium text-primary">Phone</h4>
-                <motion.a 
-                  href="tel:+919989966415" 
-                  className="text-secondary hover:text-accent transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  +91 9989966415
-                </motion.a>
-              </div>
-            </motion.div>
+            {/* Contact cards */}
+            {contactInfo.map((item, i) => (
+              <motion.div key={item.label}
+                initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.25 + i * 0.1 }}>
+                {item.href ? (
+                  <a href={item.href} target={item.href.startsWith("mailto") || item.href.startsWith("tel") ? undefined : "_blank"}
+                    rel="noopener noreferrer" className="group flex items-center gap-4 p-4 rounded-xl transition-all duration-300"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${item.color}35`; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${item.glow}`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${item.color}18`, color: item.color }}>
+                      {item.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] font-mono tracking-widest uppercase mb-0.5" style={{ color: "var(--text-muted)" }}>{item.label}</div>
+                      <div className="text-sm text-white truncate group-hover:text-white transition-colors">{item.value}</div>
+                    </div>
+                    <ArrowUpRight size={14} className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: item.color }} />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-4 p-4 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${item.color}18`, color: item.color }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-mono tracking-widest uppercase mb-0.5" style={{ color: "var(--text-muted)" }}>{item.label}</div>
+                      <div className="text-sm text-white">{item.value}</div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
 
-            <motion.div 
-              className="flex items-start space-x-4"
-              variants={contactInfoVariants}
-              custom={3}
-            >
-              <div className="p-3 bg-accent/10 rounded-full">
-                <MapPin className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <h4 className="text-lg font-medium text-primary">Location</h4>
-                <p className="text-secondary">Hyderabad, Telangana (Remote)</p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="pt-8"
-              variants={contactInfoVariants}
-              custom={4}
-            >
-              <h4 className="text-lg font-medium text-primary mb-4">Connect With Me</h4>
-              <div className="flex space-x-4">
-                {[
-                  { name: "LinkedIn", href: "https://linkedin.com/in/saikrishna-kotagiri", icon: <Linkedin size={20} /> },
-                  { name: "GitHub", href: "https://github.com/saikrishna6415", icon: <Github size={20} /> },
-                  { name: "Twitter", href: "https://twitter.com/name__is_sai", icon: <Twitter size={20} /> }
-                ].map((social, index) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    whileTap={{ scale: 0.9 }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: 1,
-                      transition: { delay: 0.5 + (index * 0.1) }
-                    }}
-                  >
-                    <span className="sr-only">{social.name}</span>
-                    {social.icon}
+            {/* Social links */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.55 }}>
+              <div className="text-[10px] font-mono tracking-widest uppercase mb-3" style={{ color: "var(--text-muted)" }}>Connect</div>
+              <div className="flex gap-2">
+                {socials.map(s => (
+                  <motion.a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                    className="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text-secondary)" }}
+                    whileHover={{ scale: 1.1, backgroundColor: "rgba(124,58,237,0.15)", borderColor: "rgba(124,58,237,0.4)", color: "#a78bfa" }}>
+                    {s.icon}
                   </motion.a>
                 ))}
               </div>
             </motion.div>
-          </motion.div>
 
-          {/* Contact Form */}
-          <motion.div
-            className="lg:col-span-3 relative"
-            variants={formVariants}
-            initial="hidden"
-            animate={controls}
-          >
-            <motion.div 
-              className="absolute inset-0 bg-card border border-border-light rounded-xl shadow-xl z-0"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            />
-            
-            <form 
-              className="relative z-10 p-8 md:p-10"
-              onSubmit={handleSubmit}
-              ref={formRef}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <motion.div
-                  className="relative"
-                  variants={itemVariants}
-                >
-                  <label 
-                    htmlFor="name" 
-                    className={`absolute left-4 transition-all duration-300 ${
-                      fieldFocus === 'name' || formData.name 
-                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.name && touched.name ? 'text-red-500' : 'text-accent') 
-                        : 'text-secondary top-3'
-                    }`}
-                  >
-                    Name
-                  </label>
-                  <input
-                    ref={nameInputRef}
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    onFocus={() => setFieldFocus('name')}
-                    onBlur={handleBlur}
-                    required
-                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
-                      errors.name && touched.name 
-                        ? 'border-red-400 focus:border-red-500' 
-                        : touched.name && !errors.name
-                        ? 'border-green-400 focus:border-green-500'
-                        : 'border-border focus:border-accent'
-                    }`}
-                  />
-                  {/* Validation indicator */}
-                  {touched.name && (
-                    <motion.div 
-                      className="absolute right-3 top-3.5"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    >
-                      {errors.name ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </motion.div>
-                  )}
-                  {/* Error message */}
-                  {errors.name && touched.name && (
-                    <motion.p 
-                      className="text-red-500 text-xs mt-1 ml-1"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.name}
-                    </motion.p>
-                  )}
-                </motion.div>
-
-                <motion.div
-                  className="relative"
-                  variants={itemVariants}
-                >
-                  <label 
-                    htmlFor="email" 
-                    className={`absolute left-4 transition-all duration-300 ${
-                      fieldFocus === 'email' || formData.email 
-                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.email && touched.email ? 'text-red-500' : 'text-accent') 
-                        : 'text-secondary top-3'
-                    }`}
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onFocus={() => setFieldFocus('email')}
-                    onBlur={handleBlur}
-                    required
-                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
-                      errors.email && touched.email 
-                        ? 'border-red-400 focus:border-red-500' 
-                        : touched.email && !errors.email
-                        ? 'border-green-400 focus:border-green-500'
-                        : 'border-border focus:border-accent'
-                    }`}
-                  />
-                  {/* Validation indicator */}
-                  {touched.email && (
-                    <motion.div 
-                      className="absolute right-3 top-3.5"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    >
-                      {errors.email ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </motion.div>
-                  )}
-                  {/* Error message */}
-                  {errors.email && touched.email && (
-                    <motion.p 
-                      className="text-red-500 text-xs mt-1 ml-1"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.email}
-                    </motion.p>
-                  )}
-                </motion.div>
-
-                {/* Subject field */}
-                <motion.div
-                  className="relative md:col-span-2"
-                  variants={itemVariants}
-                >
-                  <label 
-                    htmlFor="subject" 
-                    className={`absolute left-4 transition-all duration-300 ${
-                      fieldFocus === 'subject' || formData.subject 
-                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.subject && touched.subject ? 'text-red-500' : 'text-accent')
-                        : 'text-secondary top-3'
-                    }`}
-                  >
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    onFocus={() => setFieldFocus('subject')}
-                    onBlur={handleBlur}
-                    required
-                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 ${
-                      errors.subject && touched.subject 
-                        ? 'border-red-400 focus:border-red-500' 
-                        : touched.subject && !errors.subject
-                        ? 'border-green-400 focus:border-green-500'
-                        : 'border-border focus:border-accent'
-                    }`}
-                  />
-                  {/* Validation indicator */}
-                  {touched.subject && (
-                    <motion.div 
-                      className="absolute right-3 top-3.5"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    >
-                      {errors.subject ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </motion.div>
-                  )}
-                  {/* Error message */}
-                  {errors.subject && touched.subject && (
-                    <motion.p 
-                      className="text-red-500 text-xs mt-1 ml-1"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.subject}
-                    </motion.p>
-                  )}
-                </motion.div>
-
-                {/* Message field */}
-                <motion.div
-                  className="relative md:col-span-2"
-                  variants={itemVariants}
-                >
-                  <label 
-                    htmlFor="message" 
-                    className={`absolute left-4 transition-all duration-300 ${
-                      fieldFocus === 'message' || formData.message 
-                        ? 'text-xs -top-2 bg-card px-2 ' + (errors.message && touched.message ? 'text-red-500' : 'text-accent')
-                        : 'text-secondary top-3'
-                    }`}
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    value={formData.message}
-                    onChange={handleChange}
-                    onFocus={() => setFieldFocus('message')}
-                    onBlur={handleBlur}
-                    required
-                    className={`w-full px-4 py-3 bg-transparent border rounded-lg outline-none transition-all duration-300 resize-none ${
-                      errors.message && touched.message 
-                        ? 'border-red-400 focus:border-red-500' 
-                        : touched.message && !errors.message
-                        ? 'border-green-400 focus:border-green-500'
-                        : 'border-border focus:border-accent'
-                    }`}
-                  />
-                  {/* Validation indicator */}
-                  {touched.message && (
-                    <motion.div 
-                      className="absolute right-3 top-3.5"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    >
-                      {errors.message ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </motion.div>
-                  )}
-                  {/* Error message */}
-                  {errors.message && touched.message && (
-                    <motion.p 
-                      className="text-red-500 text-xs mt-1 ml-1"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.message}
-                    </motion.p>
-                  )}
-                </motion.div>
-
-                <div className="md:col-span-2 flex justify-end">
-                  <motion.button
-                    type="submit"
-                    disabled={formStatus === "submitting"}
-                    className="px-8 py-4 bg-accent text-white font-medium rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all flex items-center justify-center space-x-2"
-                    variants={buttonVariants}
-                    initial="hidden"
-                    animate={formStatus === "submitting" ? "submitting" : "visible"}
-                    whileHover="hover"
-                    whileTap="tap"
-                  >
-                    {formStatus === "submitting" ? (
-                      <>
-                        <motion.div
-                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        />
-                        <span>Sending...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send size={18} />
-                        <span>Send Message</span>
-                      </>
-                    )}
-                  </motion.button>
+            {/* Availability card */}
+            <motion.div className="p-4 rounded-xl" initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 0.65 }}
+              style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div>
+                  <div className="text-sm font-semibold text-emerald-400">Available for work</div>
+                  <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>Open to full-time & freelance</div>
                 </div>
               </div>
+            </motion.div>
+          </motion.div>
 
-              {/* Form Status Messages */}
-              <AnimatePresence>
-                {formStatus === "success" && (
-                  <motion.div
-                    className="absolute -bottom-16 left-0 right-0 p-6 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center justify-center space-x-3"
-                    variants={statusVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <CheckCircle size={20} />
-                    <span className="font-medium">Message received! I&apos;ll review your project details and get back to you within 24-48 hours.</span>
+          {/* ── Right: Contact form ── */}
+          <motion.div className="lg:col-span-3"
+            initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7, delay: 0.3 }}>
+
+            <div className="relative rounded-2xl p-6 md:p-8"
+              style={{ background: "rgba(13,17,23,0.7)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.07)" }}>
+
+              {/* Form glow accent */}
+              <div className="absolute top-0 right-0 w-40 h-40 pointer-events-none"
+                style={{ background: "radial-gradient(circle at 100% 0%, rgba(124,58,237,0.08) 0%, transparent 70%)" }} />
+
+              <AnimatePresence mode="wait">
+                {status === "success" ? (
+                  <motion.div key="success" className="flex flex-col items-center justify-center py-16 text-center"
+                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                      style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
+                      initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                      <CheckCircle size={28} className="text-emerald-400" />
+                    </motion.div>
+                    <h3 className="font-display font-bold text-xl text-white mb-2">Message sent! 🎉</h3>
+                    <p className="text-sm" style={{ color: "var(--text-secondary)" }}>I&apos;ll get back to you within 24 hours.</p>
                   </motion.div>
-                )}
-                
-                {formStatus === "error" && (
-                  <motion.div
-                    className="absolute -bottom-16 left-0 right-0 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center justify-center space-x-2"
-                    variants={statusVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <AlertCircle size={18} />
-                    <span>Something went wrong. Please try again.</span>
-                  </motion.div>
+                ) : (
+                  <motion.form key="form" onSubmit={handleSubmit} className="space-y-5 relative z-10"
+                    initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <InputField id="name" label="Your Name" value={formData.name}
+                        error={errors.name} touched={touched.name}
+                        onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} inputRef={nameRef} />
+                      <InputField id="email" label="Email Address" type="email" value={formData.email}
+                        error={errors.email} touched={touched.email}
+                        onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} />
+                    </div>
+
+                    <InputField id="subject" label="Subject" value={formData.subject}
+                      error={errors.subject} touched={touched.subject}
+                      onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} />
+
+                    <InputField id="message" label="Message" value={formData.message}
+                      error={errors.message} touched={touched.message}
+                      onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} rows={5} />
+
+                    {/* Error banner */}
+                    <AnimatePresence>
+                      {status === "error" && (
+                        <motion.div className="flex items-center gap-2 p-3 rounded-xl text-sm"
+                          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "rgb(252,165,165)" }}
+                          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                          <AlertCircle size={15} />
+                          Something went wrong. Please try again or email me directly.
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <div className="flex justify-end pt-2">
+                      <motion.button type="submit" disabled={status === "submitting"}
+                        className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm text-white transition-all duration-300 disabled:opacity-60"
+                        style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
+                        whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(124,58,237,0.4)" }}
+                        whileTap={{ scale: 0.97 }}>
+                        {status === "submitting" ? (
+                          <>
+                            <motion.div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                              animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+                            Sending...
+                          </>
+                        ) : (
+                          <><Send size={16} /> Send Message</>
+                        )}
+                      </motion.button>
+                    </div>
+                  </motion.form>
                 )}
               </AnimatePresence>
-            </form>
+            </div>
           </motion.div>
         </div>
       </div>
     </section>
   );
-} 
+}

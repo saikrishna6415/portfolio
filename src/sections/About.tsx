@@ -1,129 +1,295 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+import { useRef, useEffect, useState } from "react";
+import { motion, useInView } from "framer-motion";
+import { MapPin, Code2, Zap, BookOpen } from "lucide-react";
+
+function AnimatedNumber({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const duration = 1400;
+    const step = Math.ceil(target / (duration / 16));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(start);
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+
+  return (
+    <span ref={ref} className="tabular-nums">
+      {count}
+      {suffix}
+    </span>
+  );
+}
 
 export default function About() {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3
-      }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
   };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" }
-    }
+  const cellVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
   };
 
   return (
-    <section id="about" className="py-16 md:py-24 bg-section">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          ref={ref}
+    <section id="about" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--surface)" }}>
+      {/* Background decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30"
+          style={{
+            background: "radial-gradient(circle at 100% 0%, rgba(124,58,237,0.15) 0%, transparent 60%)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-20"
+          style={{
+            background: "radial-gradient(circle at 0% 100%, rgba(6,182,212,0.15) 0%, transparent 60%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section label */}
+        <motion.div
+          className="section-label mb-6"
+          initial={{ opacity: 0, x: -20 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.5 }}
+        >
+          About Me
+        </motion.div>
+
+        <motion.div
+          ref={sectionRef}
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="space-y-12"
+          className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(140px,auto)]"
         >
-          <motion.div variants={itemVariants} className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">About Me</h2>
-            <div className="w-20 h-1 bg-accent mx-auto"></div>
+          {/* ── Cell 1: Big quote (spans 8 cols) ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-8 relative rounded-2xl p-8 md:p-10 overflow-hidden group"
+            style={{
+              background: "linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(6,182,212,0.06) 100%)",
+              border: "1px solid rgba(124,58,237,0.2)",
+            }}
+          >
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{ background: "radial-gradient(circle at 50% 50%, rgba(124,58,237,0.08) 0%, transparent 70%)" }}
+            />
+            <div className="absolute top-4 left-8 font-display font-black text-[120px] leading-none select-none"
+              style={{ color: "rgba(124,58,237,0.06)" }}>
+              &ldquo;
+            </div>
+            <p className="relative z-10 font-display text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-white">
+              Building digital experiences that feel{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}
+              >
+                fast, intuitive,
+              </span>{" "}
+              and alive.
+            </p>
+            <p className="relative z-10 mt-4 text-sm md:text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Senior Full Stack Developer with 5+ years shipping high-performance web & mobile apps
+              across React, React Native, and modern backend stacks.
+            </p>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="max-w-3xl mx-auto text-lg text-secondary">
-            <p className="mb-6">
-              Senior Full Stack Developer (React / React Native) with 5+ years of experience building 
-              high-performance web and mobile applications across iOS, Android, and Web platforms using 
-              React, React Native, Redux.
-            </p>
-            
-            {/* Visual divider with icon */}
-            <div className="flex items-center justify-center my-8">
-              <div className="h-[1px] bg-border-light flex-1"></div>
-              <div className="mx-4 bg-accent/10 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
-              </div>
-              <div className="h-[1px] bg-border-light flex-1"></div>
+          {/* ── Cell 2: Years stat ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-4 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+            style={{
+              background: "rgba(6,182,212,0.07)",
+              border: "1px solid rgba(6,182,212,0.18)",
+            }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(6,182,212,0.15)" }}>
+              <Zap size={18} style={{ color: "var(--accent-cyan)" }} />
             </div>
-            
-            <p className="mb-6">
-              Strong backend knowledge in Java (Spring Boot) and Node.js (Express), with experience using 
-              cloud services (AWS S3, Lambda, Firebase) to deliver scalable full-stack solutions.
-            </p>
-            
-            {/* Visual callout box */}
-            <div className="border-l-4 border-accent bg-accent/5 p-4 rounded my-8">
-              <p className="italic text-secondary">
-                &ldquo;Expert in development best practices including CI/CD (Jenkins, GitHub Actions), automated 
-                testing, and Agile methodologies; passionate about optimizing app performance (e.g., reducing 
-                load times by ~30%) to enhance user experience for thousands of users.&rdquo;
+            <div>
+              <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
+                <AnimatedNumber target={5} suffix="+" />
+              </div>
+              <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-cyan)" }}>
+                Years Experience
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── Cell 3: Projects stat ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+            style={{
+              background: "rgba(236,72,153,0.07)",
+              border: "1px solid rgba(236,72,153,0.18)",
+            }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(236,72,153,0.15)" }}>
+              <Code2 size={18} style={{ color: "var(--accent-fuchsia)" }} />
+            </div>
+            <div>
+              <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
+                <AnimatedNumber target={20} suffix="+" />
+              </div>
+              <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-fuchsia)" }}>
+                Projects Shipped
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── Cell 4: Articles stat ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+            style={{
+              background: "rgba(124,58,237,0.07)",
+              border: "1px solid rgba(124,58,237,0.2)",
+            }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(124,58,237,0.15)" }}>
+              <BookOpen size={18} style={{ color: "var(--accent-hover)" }} />
+            </div>
+            <div>
+              <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
+                <AnimatedNumber target={8} suffix="+" />
+              </div>
+              <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-hover)" }}>
+                Articles Published
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── Cell 5: Bio text ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-6 relative rounded-2xl p-6 md:p-8 overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div
+              className="absolute left-0 top-0 bottom-0 w-[3px] rounded-full"
+              style={{ background: "linear-gradient(180deg, #7c3aed, #06b6d4, #ec4899)" }}
+            />
+            <div className="pl-4 space-y-3 text-sm md:text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              <p>
+                Expert in{" "}
+                <span className="text-white font-medium">CI/CD</span> (Jenkins, GitHub Actions),
+                automated testing & Agile — reducing release cycles by{" "}
+                <span style={{ color: "var(--accent-cyan)" }} className="font-medium">~70%</span>.
+              </p>
+              <p>
+                Backend depth in{" "}
+                <span className="text-white font-medium">Java Spring Boot</span> &{" "}
+                <span className="text-white font-medium">Node.js</span>, cloud-native with{" "}
+                <span style={{ color: "var(--accent-hover)" }} className="font-medium">AWS</span> &{" "}
+                <span style={{ color: "var(--accent-hover)" }} className="font-medium">Firebase</span>.
+              </p>
+              <p>
+                Passionate about optimizing app performance — cutting load times by{" "}
+                <span style={{ color: "var(--accent-fuchsia)" }} className="font-medium">~30%</span> and
+                reducing crash rates for thousands of users.
               </p>
             </div>
-            
-            <p>
-              Published technical articles on mobile development best practices and SDK integrations, 
-              demonstrating thought leadership and cross-platform development expertise.
-            </p>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div 
-                key={index}
-                className="p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border border-border-light relative overflow-hidden group"
-                whileHover={{ y: -5 }}
-              >
-                {/* Background decoration */}
-                <div className="absolute -right-4 -top-4 w-24 h-24 bg-accent/5 rounded-full transition-all duration-300 group-hover:scale-150 group-hover:bg-accent/10" />
-                
-                <motion.div 
-                  className="text-4xl text-accent mb-4 font-bold relative"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-                  transition={{ delay: index * 0.2, duration: 0.5, type: "spring" }}
+          {/* ── Cell 6: Location/availability ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-4 relative rounded-2xl p-6 overflow-hidden group flex flex-col justify-between"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            {/* Dot-grid map decoration */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: "radial-gradient(circle, rgba(124,58,237,0.5) 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+              }}
+            />
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(124,58,237,0.15)" }}>
+                <MapPin size={18} style={{ color: "var(--accent-hover)" }} />
+              </div>
+              <div className="font-display font-semibold text-lg text-white">Hyderabad, India</div>
+              <div className="font-mono text-xs mt-1" style={{ color: "var(--text-muted)" }}>Open to remote worldwide</div>
+            </div>
+            <div className="relative z-10 mt-4 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono text-xs text-emerald-400">Available now</span>
+            </div>
+          </motion.div>
+
+          {/* ── Cell 7: Tech highlights ── */}
+          <motion.div
+            variants={cellVariants}
+            className="md:col-span-8 relative rounded-2xl p-6 overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div className="font-mono text-xs tracking-widest uppercase mb-4" style={{ color: "var(--text-muted)" }}>
+              Core Stack
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: "React", color: "#61DAFB" },
+                { name: "React Native", color: "#61DAFB" },
+                { name: "TypeScript", color: "#3178C6" },
+                { name: "Node.js", color: "#68A063" },
+                { name: "Java / Spring Boot", color: "#f89820" },
+                { name: "AWS", color: "#FF9900" },
+                { name: "Firebase", color: "#FFCA28" },
+                { name: "Redux", color: "#764ABC" },
+                { name: "PostgreSQL", color: "#336791" },
+                { name: "Docker", color: "#2496ED" },
+                { name: "GitHub Actions", color: "#2088FF" },
+                { name: "Fastlane", color: "#00F200" },
+              ].map((tech) => (
+                <motion.span
+                  key={tech.name}
+                  className="tech-pill cursor-default"
+                  whileHover={{ scale: 1.05 }}
+                  style={{
+                    borderColor: `${tech.color}30`,
+                    color: tech.color,
+                    background: `${tech.color}0d`,
+                  }}
                 >
-                  {stat.value}
-                </motion.div>
-                <h3 className="text-xl font-semibold mb-2 text-primary relative">{stat.title}</h3>
-                <p className="text-muted relative">{stat.description}</p>
-              </motion.div>
-            ))}
+                  {tech.name}
+                </motion.span>
+              ))}
+            </div>
           </motion.div>
         </motion.div>
       </div>
     </section>
   );
 }
-
-const stats = [
-  {
-    value: "5+",
-    title: "Years of Experience",
-    description: "Building responsive web and mobile applications"
-  },
-  {
-    value: "20+",
-    title: "Projects Completed",
-    description: "Delivered on time with high user satisfaction"
-  },
-  {
-    value: "8+",
-    title: "Technical Articles",
-    description: "Published on modern development practices"
-  }
-]; 

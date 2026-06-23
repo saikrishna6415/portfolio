@@ -1,94 +1,97 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { useLowPowerMode, shouldEnableAnimation } from "@/utils/animationOptimizer";
 
 export default function CustomCursor() {
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isPointer, setIsPointer] = useState(false);
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
-  const isLowPower = useLowPowerMode();
-  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
-  
-  // For smoother animation with slight lag
-  const springConfig = { damping: 25, stiffness: 300 };
-  const smoothX = useSpring(cursorX, springConfig);
-  const smoothY = useSpring(cursorY, springConfig);
-  
+  const [isTouch, setIsTouch] = useState(false);
+
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const springX = useSpring(x, { stiffness: 150, damping: 18, mass: 0.5 });
+  const springY = useSpring(y, { stiffness: 150, damping: 18, mass: 0.5 });
+
   useEffect(() => {
-    // Add a data-cursor attribute to elements that should change cursor to pointer
-    const addCursorClasses = () => {
-      document.querySelectorAll('a, button, [role="button"], input[type="submit"], input[type="button"]').forEach((el) => {
-        el.setAttribute("data-cursor", "pointer");
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      setIsTouch(true);
+      return;
+    }
+
+    const onMove = (e: MouseEvent) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+      setIsVisible(true);
+    };
+    const onDown = () => setIsClicking(true);
+    const onUp = () => setIsClicking(false);
+
+    const attachHover = () => {
+      document.querySelectorAll("a, button, [data-cursor]").forEach(el => {
+        el.addEventListener("mouseenter", () => setIsHovering(true));
+        el.addEventListener("mouseleave", () => setIsHovering(false));
       });
     };
-    
-    const handleMouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-      setIsVisible(true);
-      
-      // Check if hovering over an interactive element
-      const target = e.target as HTMLElement;
-      setIsPointer(!!target.closest("[data-cursor='pointer']"));
-    };
-    
-    const handleMouseLeave = () => {
-      setIsVisible(false);
-    };
-    
-    // Initialize cursor classes
-    addCursorClasses();
-    
-    // Set up event listeners
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseleave", handleMouseLeave);
-    
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+    attachHover();
+
+    const obs = new MutationObserver(attachHover);
+    obs.observe(document.body, { childList: true, subtree: true });
+
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp);
+      obs.disconnect();
     };
-  }, [cursorX, cursorY]);
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (isTouch) return null;
+
   return (
     <>
-      {/* Hide the default cursor */}
-      {/* Keep native cursor; only show overlay */}
-      
-      {/* Custom cursor - only show on desktop */}
-      {enableDecorative && (
-      <div className="hidden md:block">
-        {/* Outer cursor circle */}
-        <motion.div
-          className="fixed top-0 left-0 w-10 h-10 rounded-full border border-accent pointer-events-none z-50"
-          style={{
-            x: smoothX,
-            y: smoothY,
-            translateX: "-50%",
-            translateY: "-50%",
-            opacity: isVisible ? 1 : 0,
-            scale: isPointer ? 1.5 : 1,
-          }}
-          transition={{ scale: { duration: 0.15 } }}
-        />
-        
-        {/* Inner cursor dot */}
-        <motion.div
-          className="fixed top-0 left-0 w-2 h-2 rounded-full bg-accent pointer-events-none z-50"
-          style={{
-            x: cursorX,
-            y: cursorY,
-            translateX: "-50%",
-            translateY: "-50%",
-            opacity: isVisible ? 1 : 0,
-            scale: isPointer ? 0 : 1,
-          }}
-          transition={{ scale: { duration: 0.1 } }}
-        />
-      </div>
-      )}
+      {/* Sharp dot — mix-blend-difference makes it invert colors underneath */}
+      <motion.div
+        ref={dotRef}
+        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference rounded-full bg-white"
+        style={{ x, y, translateX: "-50%", translateY: "-50%" }}
+        animate={{
+          width: isHovering ? 10 : isClicking ? 4 : 6,
+          height: isHovering ? 10 : isClicking ? 4 : 6,
+          opacity: isVisible ? 1 : 0,
+        }}
+        transition={{ duration: 0.12 }}
+      />
+
+      {/* Spring ring — lags behind */}
+      <motion.div
+        ref={ringRef}
+        className="fixed top-0 left-0 pointer-events-none z-[9998] rounded-full"
+        style={{
+          x: springX,
+          y: springY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: isVisible ? 1 : 0,
+        }}
+        animate={{
+          width: isHovering ? 48 : isClicking ? 24 : 34,
+          height: isHovering ? 48 : isClicking ? 24 : 34,
+          borderColor: isHovering ? "#a78bfa" : "rgba(255,255,255,0.3)",
+          backgroundColor: isHovering ? "rgba(124,58,237,0.1)" : "transparent",
+          boxShadow: isHovering ? "0 0 24px rgba(124,58,237,0.5)" : "none",
+          border: "1.5px solid rgba(255,255,255,0.3)",
+        }}
+        transition={{ duration: 0.2 }}
+      />
     </>
   );
-} 
+}

@@ -1,149 +1,310 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import { ExternalLink, Briefcase, Monitor, Smartphone } from "lucide-react";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { Monitor, Smartphone, ArrowRight } from "lucide-react";
+import TiltCard from "@/components/TiltCard";
 
 const projects = [
   {
-    title: "React Native SDK Development",
+    title: "React Native SDK",
     platform: "Mobile",
-    employmentType: "Full-time",
-    description: "Engineered a React Native SDK to streamline the integration of proprietary services into third-party mobile applications, reducing integration time for partners by 60%.",
-    tags: ["React Native", "SDK", "TypeScript", "Android/iOS"],
-    liveUrl: null,
+    type: "Full-time",
+    description:
+      "Engineered an SDK to streamline integration of proprietary services into third-party apps — reducing partner integration time by 60%.",
+    tags: ["React Native", "TypeScript", "SDK", "Android/iOS"],
+    accent: "#7c3aed",
+    glow: "rgba(124,58,237,0.3)",
+    number: "01",
+    emoji: "🧩",
   },
   {
     title: "White-Label Healthcare App",
     platform: "Mobile",
-    employmentType: "Full-time",
-    description: "Architected and built a white-label mobile application for a chain of healthcare clinics, enabling patient management, appointment scheduling, and remote consultations.",
-    tags: ["React Native", "White-Label", "Healthcare", "Firebase"],
-    liveUrl: null,
+    type: "Full-time",
+    description:
+      "Architected a white-label mobile app for a clinic chain — patient management, appointment scheduling, and remote consultations.",
+    tags: ["React Native", "Firebase", "Healthcare", "White-Label"],
+    accent: "#06b6d4",
+    glow: "rgba(6,182,212,0.3)",
+    number: "02",
+    emoji: "🏥",
   },
   {
     title: "Fitness & Health App",
     platform: "Mobile",
-    employmentType: "Full-time",
-    description: "Contributed to a leading fitness application, implementing features for workout tracking, diet planning, and live-streaming classes to over 100k users.",
-    tags: ["React Native", "Redux", "Node.js", "Fitness Tech"],
-    liveUrl: null,
+    type: "Full-time",
+    description:
+      "Contributed to a leading fitness app — workout tracking, diet planning, and live-streaming classes for 100k+ users.",
+    tags: ["React Native", "Redux", "Node.js", "Streaming"],
+    accent: "#ec4899",
+    glow: "rgba(236,72,153,0.3)",
+    number: "03",
+    emoji: "💪",
   },
   {
     title: "Parenting Support Platform",
     platform: "Web",
-    employmentType: "Full-time",
-    description: "Enhanced a high-traffic parenting support web platform, focusing on performance optimization, SEO, and implementing new community features for a better user experience.",
-    tags: ["React", "Performance", "SEO", "Community Platform"],
-    liveUrl: null,
+    type: "Full-time",
+    description:
+      "Enhanced a high-traffic parenting web platform — performance optimization, SEO improvements, and new community features.",
+    tags: ["React", "SEO", "Performance", "Community"],
+    accent: "#a78bfa",
+    glow: "rgba(167,139,250,0.3)",
+    number: "04",
+    emoji: "👨‍👩‍👧",
   },
   {
-    title: "Restaurant Discovery Web App",
+    title: "Restaurant Discovery App",
     platform: "Web",
-    employmentType: "Freelance",
-    description: "Designed and developed a web application for restaurant discovery and reservations, featuring a user-friendly interface and a robust search functionality.",
-    tags: ["React", "Node.js", "Google Maps API", "Restaurant Tech"],
-    liveUrl: null,
+    type: "Freelance",
+    description:
+      "Designed and developed a restaurant discovery & reservations web app with robust search and Google Maps integration.",
+    tags: ["React", "Node.js", "Google Maps API", "UX"],
+    accent: "#f59e0b",
+    glow: "rgba(245,158,11,0.25)",
+    number: "05",
+    emoji: "🍽️",
   },
   {
-    title: "Educational Treasure Hunt Game",
+    title: "Educational Treasure Hunt",
     platform: "Mobile",
-    employmentType: "Freelance",
-    description: "Created an interactive treasure hunt game for children, using location-based services and gamification to encourage outdoor activity and learning.",
-    tags: ["React Native", "Gamification", "Kids App", "Geolocation"],
-      liveUrl: null,
+    type: "Freelance",
+    description:
+      "Interactive location-based treasure hunt game for children — gamification + geolocation to encourage outdoor learning.",
+    tags: ["React Native", "Gamification", "Geolocation", "Kids"],
+    accent: "#10b981",
+    glow: "rgba(16,185,129,0.25)",
+    number: "06",
+    emoji: "🗺️",
   },
   {
     title: "Digital Newspaper Platform",
     platform: "Web",
-    employmentType: "Freelance",
-    description: "Built the front-end for a responsive e-paper platform, providing an intuitive and engaging reading experience for a major digital publisher.",
-    tags: ["React", "UI/UX", "Responsive Design", "Publishing"],
-    liveUrl: null,
+    type: "Freelance",
+    description:
+      "Built the front-end for a responsive e-paper platform — intuitive reading experience for a major digital publisher.",
+    tags: ["React", "Responsive", "UI/UX", "Publishing"],
+    accent: "#06b6d4",
+    glow: "rgba(6,182,212,0.25)",
+    number: "07",
+    emoji: "📰",
   },
 ];
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  }),
-};
-
 export default function Projects() {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const getPlatformIcon = (platform: string) => {
-    if (platform.toLowerCase() === 'mobile') return <Smartphone size={16} />;
-    return <Monitor size={16} />;
-  };
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="projects" className="py-24 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Projects
-          </h2>
-          <p className="text-xl text-secondary max-w-3xl mx-auto">
-            A selection of projects that demonstrate my expertise in building robust and user-friendly applications.
-          </p>
+    <section id="projects" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--surface)" }}>
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute bottom-0 right-0 w-[600px] h-[400px] opacity-20"
+          style={{
+            background: "radial-gradient(ellipse at 100% 100%, rgba(6,182,212,0.2) 0%, transparent 60%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10" ref={sectionRef}>
+        {/* Section header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <motion.div
+            className="section-label mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.5 }}
+          >
+            Selected Work
+          </motion.div>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <motion.h2
+              className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Projects &{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #ec4899)" }}
+              >
+                Builds
+              </span>
+            </motion.h2>
+
+            <motion.p
+              className="text-sm font-mono md:text-right"
+              style={{ color: "var(--text-muted)" }}
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ delay: 0.3 }}
+            >
+              Scroll horizontally →
+            </motion.p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Horizontal scroll container */}
+        <div
+          ref={scrollRef}
+          className="flex gap-5 px-4 md:px-8 lg:px-16 pb-8 overflow-x-auto snap-x snap-mandatory"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(124,58,237,0.4) transparent",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorX: "contain",
+            touchAction: "pan-x",
+          }}
+        >
           {projects.map((project, i) => (
-            <motion.div
-              key={project.title}
-              custom={i}
-              initial="hidden"
-              animate={inView ? "visible" : "hidden"}
-              variants={cardVariants}
-              className="bg-card rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col p-8"
-            >
-              <div className="flex-grow">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-2xl font-bold text-primary">{project.title}</h3>
-                  {project.liveUrl && (
-                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover transition-colors">
-                      <ExternalLink size={24} />
-                    </a>
-                  )}
-                </div>
+            <ProjectCard key={project.title} project={project} index={i} inView={inView} />
+          ))}
 
-                <div className="flex items-center gap-6 text-sm text-secondary mb-4">
-                  <div className="flex items-center gap-2">
-                    {getPlatformIcon(project.platform)}
-                    <span>{project.platform}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Briefcase size={16} />
-                    <span>{project.employmentType}</span>
-                  </div>
-                </div>
+          {/* End spacer */}
+          <div className="flex-shrink-0 w-4" />
+        </div>
 
-                <p className="text-secondary mb-6">{project.description}</p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {project.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 mt-4">
+          {projects.map((_, i) => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+              style={{ background: i === 0 ? "var(--accent)" : "rgba(255,255,255,0.15)" }}
+            />
           ))}
         </div>
       </div>
     </section>
   );
-} 
+}
+
+function ProjectCard({
+  project,
+  index,
+  inView,
+}: {
+  project: (typeof projects)[number];
+  index: number;
+  inView: boolean;
+}) {
+  const cardRef = useRef(null);
+  const cardInView = useInView(cardRef, { once: true });
+
+  return (
+    <motion.div
+      ref={cardRef}
+      className="flex-shrink-0 snap-start w-[300px] md:w-[360px] lg:w-[400px]"
+      initial={{ opacity: 0, y: 40 }}
+      animate={cardInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <TiltCard
+        tiltAmount={8}
+        glareColor={`${project.glow}`}
+        className="flex flex-col rounded-2xl overflow-hidden group cursor-pointer h-full"
+        style={{
+          background: "rgba(13,17,23,0.85)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          minHeight: "460px",
+          boxShadow: "none",
+          transition: "box-shadow 0.3s",
+        }}
+      >
+      {/* Color glow top border */}
+      <div
+        className="h-1 w-full flex-shrink-0"
+        style={{
+          background: `linear-gradient(90deg, ${project.accent}, ${project.accent}60)`,
+          boxShadow: `0 0 16px ${project.glow}`,
+        }}
+      />
+
+      {/* Card content */}
+      <div className="flex flex-col flex-1 p-6 md:p-7">
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-5">
+          <div
+            className="text-4xl font-display font-black leading-none select-none opacity-20 group-hover:opacity-40 transition-opacity duration-300"
+            style={{ color: project.accent }}
+          >
+            {project.number}
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
+              style={{
+                background: `${project.accent}15`,
+                border: `1px solid ${project.accent}30`,
+                color: project.accent,
+              }}
+            >
+              {project.platform === "Mobile" ? <Smartphone size={10} /> : <Monitor size={10} />}
+              {project.platform}
+            </span>
+            <span
+              className="px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "var(--text-muted)",
+              }}
+            >
+              {project.type}
+            </span>
+          </div>
+        </div>
+
+        {/* Emoji + Title */}
+        <div className="mb-3">
+          <span className="text-3xl mb-2 block">{project.emoji}</span>
+          <h3
+            className="font-display font-bold text-xl md:text-2xl text-white leading-tight group-hover:text-opacity-90 transition-colors"
+          >
+            {project.title}
+          </h3>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "var(--text-secondary)" }}>
+          {project.description}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-5">
+          {project.tags.map((tag) => (
+            <span
+              key={tag}
+              className="tech-pill"
+              style={{
+                color: project.accent,
+                borderColor: `${project.accent}30`,
+                background: `${project.accent}0d`,
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Footer arrow */}
+        <div className="flex items-center gap-2 text-xs font-mono mt-auto pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)", color: "var(--text-muted)" }}>
+          <span>View details</span>
+          <motion.div
+            className="group-hover:translate-x-1 transition-transform"
+            style={{ color: project.accent }}
+          >
+            <ArrowRight size={14} />
+          </motion.div>
+        </div>
+      </div>
+      </TiltCard>
+    </motion.div>
+  );
+}

@@ -1,267 +1,436 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
-import { Github, Linkedin, Twitter, Instagram, Mail } from "lucide-react";
-
-// Import the new components
-import GradientText from "@/components/GradientText";
-import AnimatedBackground from "@/components/AnimatedBackground";
-import MagneticButton from "@/components/MagneticButton";
+import { Github, Linkedin, Twitter, Instagram, Mail, ArrowDown } from "lucide-react";
 import AnimatedTypewriter from "@/components/AnimatedTypewriter";
-import { useLowPowerMode, shouldEnableAnimation, getOptimizedParticleCount } from "@/utils/animationOptimizer";
-
-function getWindowSize() {
-  if (typeof window === "undefined") return { width: 1200, height: 800 };
-  return { width: window.innerWidth, height: window.innerHeight };
-}
-
-function generateParticles(count: number) {
-  const { width, height } = getWindowSize();
-  return Array.from({ length: count }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    scale: Math.random() * 0.5 + 0.5,
-    width: Math.random() * 20 + 5,
-    height: Math.random() * 20 + 5,
-    opacity: Math.random() * 0.5 + 0.2,
-    duration: 20 + Math.random() * 30,
-    animX: [Math.random() * width, Math.random() * width, Math.random() * width],
-    animY: [Math.random() * height, Math.random() * height, Math.random() * height],
-  }));
-}
+import { useScramble } from "@/hooks/useScramble";
 
 export default function Hero() {
-  const isLowPower = useLowPowerMode();
-  const enableDecorative = shouldEnableAnimation('decorative', isLowPower);
-  const optimizedParticleCount = getOptimizedParticleCount(isLowPower, 15); // Reduced from 20
-  const [particles, setParticles] = useState(() => generateParticles(optimizedParticleCount));
-  const hasInitialized = useRef(false);
+  const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { output: matterText, scramble: rescramble } = useScramble({ text: "Matter", speed: 35, revealDelay: 600 });
+
+  // Cursor glow tracking
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 20 });
 
   useEffect(() => {
-    if (!hasInitialized.current) {
-      setParticles(generateParticles(optimizedParticleCount));
-      hasInitialized.current = true;
-    }
-  }, [optimizedParticleCount]);
+    setMounted(true);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
 
   const roles = [
     "Full Stack Developer",
     "React & React Native Expert",
     "UI/UX Enthusiast",
-    "Performance Optimizer"
-  ]; // Reduced from 5 to 4
+    "Performance Optimizer",
+  ];
 
-  const iconContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // Reduced from 0.2
-        delayChildren: 0.6, // Reduced from 0.8
-      },
-    },
-  };
-
-  const iconVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+  const socials = [
+    { icon: <Github size={18} />, href: "https://github.com/saikrishna6415", label: "GitHub" },
+    { icon: <Linkedin size={18} />, href: "https://linkedin.com/in/saikrishna-kotagiri", label: "LinkedIn" },
+    { icon: <Twitter size={18} />, href: "https://twitter.com/name__is_sai", label: "Twitter" },
+    { icon: <Instagram size={18} />, href: "https://instagram.com/saikrishna.kotagiri", label: "Instagram" },
+    { icon: <Mail size={18} />, href: "mailto:saikrishnakotagiri16@gmail.com", label: "Email" },
+  ];
 
   return (
-    <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Replace gradient background with AnimatedBackground */}
-      {enableDecorative && <AnimatedBackground className="opacity-50 z-0" />} {/* Reduced opacity from 70 */}
-
-      {/* Keep your existing floating particles */}
-      {enableDecorative && particles.map((particle, i) => (
+    <section
+      id="home"
+      ref={containerRef}
+      className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#050810]"
+    >
+      {/* ── Cursor-following glow ── */}
+      {mounted && (
         <motion.div
-          key={i}
-          className="absolute rounded-full bg-accent/20"
-          initial={{
-            x: particle.x,
-            y: particle.y,
-            scale: particle.scale,
-          }}
-          animate={{
-            x: particle.animX,
-            y: particle.animY,
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
+          className="pointer-events-none fixed inset-0 z-0"
           style={{
-            width: `${particle.width}px`,
-            height: `${particle.height}px`,
-            opacity: particle.opacity,
+            background: `radial-gradient(600px circle at ${springX.get()}px ${springY.get()}px, rgba(124,58,237,0.07), transparent 70%)`,
+          }}
+          // We use a plain div that updates via spring below
+        />
+      )}
+
+      {/* ── Ambient orbs ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Violet orb top-left */}
+        <div
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full animate-glow-pulse"
+          style={{
+            background: "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)",
+            filter: "blur(40px)",
           }}
         />
-      ))}
+        {/* Cyan orb bottom-right */}
+        <div
+          className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full animate-glow-pulse"
+          style={{
+            background: "radial-gradient(circle, rgba(6,182,212,0.14) 0%, transparent 70%)",
+            filter: "blur(50px)",
+            animationDelay: "1.5s",
+          }}
+        />
+        {/* Fuchsia orb center-right */}
+        <div
+          className="absolute top-1/2 right-[15%] w-[300px] h-[300px] rounded-full"
+          style={{
+            background: "radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            animation: "glow-pulse 5s ease-in-out infinite 3s",
+          }}
+        />
 
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-          {/* Text content - spans 3 columns */}
-          <motion.div 
-            className="lg:col-span-3 space-y-8"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }} // Reduced delay from 0.2
-          >
+        {/* Grid lines */}
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(124,58,237,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.5) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
+      {/* ── Giant stencil text (background) ── */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+        <span
+          className="font-display font-black select-none whitespace-nowrap"
+          style={{
+            fontSize: "clamp(80px, 18vw, 220px)",
+            WebkitTextStroke: "1px rgba(255,255,255,0.04)",
+            color: "transparent",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          SAIKRISHNA
+        </span>
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-28 pb-16 md:pt-32 md:pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+          {/* ── Left: Text content ── */}
+          <div className="space-y-8 order-2 lg:order-1">
+
+            {/* Terminal typewriter pill */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }} // Reduced delay from 0.3
+              transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <motion.div 
-                className="inline-block px-4 py-2 bg-accent/10 rounded-full font-medium mb-6"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <AnimatedTypewriter
-                  phrases={roles}
-                  typingSpeed={80}
-                  deletingSpeed={40}
-                  className="text-accent"
-                />
-              </motion.div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.2)]">
+                <span className="w-2 h-2 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
+                <span className="font-mono text-xs text-[var(--accent-cyan)] tracking-wider">
+                  {">"}
+                  &nbsp;
+                  <AnimatedTypewriter
+                    phrases={roles}
+                    typingSpeed={70}
+                    deletingSpeed={35}
+                    className="text-[var(--accent-cyan)]"
+                  />
+                  <span className="opacity-70">_</span>
+                </span>
+              </div>
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl xl:text-6xl font-bold leading-tight"> {/* Reduced from 7xl to 6xl */}
-              <span className="text-primary">Building Digital </span>
-              <GradientText
-                text="Solutions That Matter"
-                className=""
-                gradientColors={["#3b82f6", "#8b5cf6", "#ec4899", "#3b82f6"]}
-              />
-            </h1>
+            {/* Main heading */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="space-y-2"
+            >
+              <h1 className="font-display font-bold leading-[1.1]" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "var(--text-primary)" }}>
+                Building{" "}
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #06b6d4 60%, #ec4899 100%)",
+                    backgroundSize: "200% 200%",
+                    animation: "shimmer-slide 4s linear infinite",
+                  }}
+                >
+                  Digital
+                </span>
+                <br />
+                <span className="text-white">Solutions That</span>{" "}
+                <span
+                  className="relative inline-block cursor-pointer font-mono"
+                  style={{
+                    WebkitTextStroke: "2px rgba(167,139,250,0.6)",
+                    color: "transparent",
+                    letterSpacing: "-0.02em",
+                  }}
+                  onMouseEnter={rescramble}
+                  title="hover me"
+                >
+                  {matterText}
+                </span>
+              </h1>
+            </motion.div>
 
+            {/* Description */}
             <motion.p
-              className="text-lg md:text-xl text-secondary max-w-2xl" // Reduced base size from xl
+              className="text-base md:text-lg leading-relaxed max-w-lg"
+              style={{ color: "var(--text-secondary)" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }} // Reduced delay from 0.5
+              transition={{ duration: 0.6, delay: 0.35 }}
             >
-              Full stack developer with expertise in <span className="text-accent font-medium">React</span>, <span className="text-accent font-medium">React Native</span>, and modern backend technologies. Focused on creating high-performance applications with exceptional user experiences.
+              Senior Full Stack Developer with{" "}
+              <span className="text-white font-medium">5+ years</span> crafting
+              high-performance{" "}
+              <span style={{ color: "var(--accent-hover)" }}>React</span> &{" "}
+              <span style={{ color: "var(--accent-cyan)" }}>React Native</span>{" "}
+              applications — across web, iOS & Android.
             </motion.p>
 
-            <motion.div 
-              className="flex flex-wrap gap-4 pt-4"
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-wrap gap-3 pt-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }} // Reduced delay from 0.6
+              transition={{ duration: 0.6, delay: 0.45 }}
             >
-              <MagneticButton href="#contact" magneticStrength={0.3}>
-                <div className="px-8 py-4 bg-accent text-white font-medium rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-all">
-                  Let&apos;s Work Together
-                </div>
-              </MagneticButton>
-
-              <MagneticButton href="#experience" magneticStrength={0.3}>
-                <div className="px-8 py-4 bg-transparent border border-border text-primary font-medium rounded-lg hover:bg-card/50 transition-all">
-                  View My Experience
-                </div>
-              </MagneticButton>
+              <a
+                href="#contact"
+                onClick={(e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}
+                className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm text-white overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
+              >
+                <span className="relative z-10">Let&apos;s Work Together</span>
+                <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
+              </a>
+              <a
+                href="#experience"
+                onClick={(e) => { e.preventDefault(); document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" }); }}
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm transition-all duration-300 hover:scale-105"
+                style={{
+                  color: "var(--text-primary)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.04)",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(124,58,237,0.5)"; e.currentTarget.style.background = "rgba(124,58,237,0.08)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+              >
+                View Experience
+              </a>
             </motion.div>
 
-            <motion.div 
-              className="flex items-center gap-4 pt-6"
-              variants={iconContainerVariants}
-              initial="hidden"
-              animate="visible"
+            {/* Social icons */}
+            <motion.div
+              className="flex items-center gap-3 pt-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
             >
-              {[
-                { icon: <Github size={20} />, href: "https://github.com/saikrishna6415", label: "GitHub" },
-                { icon: <Linkedin size={20} />, href: "https://linkedin.com/in/saikrishna-kotagiri", label: "LinkedIn" },
-                { icon: <Twitter size={20} />, href: "https://twitter.com/name__is_sai", label: "Twitter" },
-                { icon: <Instagram size={20} />, href: "https://instagram.com/saikrishna.kotagiri", label: "Instagram" },
-                { icon: <Mail size={20} />, href: "mailto:saikrishnakotagiri16@gmail.com", label: "Email" },
-
-              ].map((social, index) => (
-                <motion.div key={index} variants={iconVariants}>
-                  <MagneticButton
-                    magneticStrength={0.3}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 bg-card border border-border rounded-full text-secondary hover:text-accent hover:border-accent transition-colors duration-300"
-                    aria-label={social.label}
-                  >
-                    {social.icon}
-                  </MagneticButton>
-                </motion.div>
+              {socials.map((social, i) => (
+                <motion.a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="w-9 h-9 flex items-center justify-center rounded-full transition-all duration-200"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "var(--text-secondary)",
+                  }}
+                  whileHover={{
+                    scale: 1.15,
+                    backgroundColor: "rgba(124,58,237,0.15)",
+                    borderColor: "rgba(124,58,237,0.4)",
+                    color: "#a78bfa",
+                  }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 + i * 0.07 }}
+                >
+                  {social.icon}
+                </motion.a>
               ))}
-            </motion.div>
-          </motion.div>
 
-          {/* Image container - spans 2 columns */}
-          <motion.div 
-            className="lg:col-span-2 flex justify-center items-center"
-            initial={{ opacity: 0, scale: 0.9 }}
+              {/* Divider + status */}
+              <div className="flex items-center gap-2 ml-2" style={{ color: "var(--text-muted)" }}>
+                <div className="w-px h-5 bg-white/10" />
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-mono">Available for work</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* ── Right: Profile visual ── */}
+          <motion.div
+            className="flex justify-center items-center order-1 lg:order-2"
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }} // Reduced delay from 0.5
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative w-[250px] h-[250px] md:w-[350px] md:h-[350px] lg:w-[400px] lg:h-[400px]"> {/* Reduced mobile size from 300px to 250px */}
-              {/* Animated border */}
-              {enableDecorative && (
-                <motion.div 
-                  className="absolute inset-0 rounded-full border-2 border-accent"
-                  initial={{ rotate: 0 }}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-                />
-              )}
-              
-              {/* Animated dots */}
-              {[0, 1, 2, 3].map((i) => (
+            <div className="relative w-[280px] h-[280px] md:w-[360px] md:h-[360px] lg:w-[420px] lg:h-[420px]">
+
+              {/* Outer rotating ring — violet */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  border: "1px dashed rgba(124,58,237,0.35)",
+                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 25, ease: "linear", repeat: Infinity }}
+              />
+
+              {/* Inner rotating ring — cyan */}
+              <motion.div
+                className="absolute inset-5 rounded-full"
+                style={{
+                  border: "1px dashed rgba(6,182,212,0.25)",
+                }}
+                animate={{ rotate: -360 }}
+                transition={{ duration: 18, ease: "linear", repeat: Infinity }}
+              />
+
+              {/* Orbiting dots */}
+              {[
+                { color: "#7c3aed", size: 10, radius: 0, delay: 0, dur: 25 },
+                { color: "#06b6d4", size: 8, radius: 20, delay: 1.5, dur: 18 },
+                { color: "#ec4899", size: 6, radius: 10, delay: 3, dur: 22 },
+              ].map((dot, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-4 h-4 bg-accent rounded-full shadow-lg shadow-accent/30"
-                  initial={{ 
-                    x: Math.cos(i * Math.PI / 2) * 180, 
-                    y: Math.sin(i * Math.PI / 2) * 180,
-                    scale: 0.8 
+                  className="absolute rounded-full shadow-lg"
+                  style={{
+                    width: dot.size,
+                    height: dot.size,
+                    backgroundColor: dot.color,
+                    boxShadow: `0 0 10px ${dot.color}`,
+                    top: "50%",
+                    left: "50%",
+                    marginTop: -dot.size / 2,
+                    marginLeft: -dot.size / 2,
                   }}
                   animate={{
-                    scale: [0.8, 1.2, 0.8],
+                    x: [
+                      `${(50 + dot.radius) * (i % 2 === 0 ? 1 : -1)}%`,
+                      `${(50 + dot.radius) * (i % 2 === 0 ? -1 : 1)}%`,
+                      `${(50 + dot.radius) * (i % 2 === 0 ? 1 : -1)}%`,
+                    ],
+                    y: [
+                      `${-(50 + dot.radius)}%`,
+                      `${50 + dot.radius}%`,
+                      `${-(50 + dot.radius)}%`,
+                    ],
                   }}
                   transition={{
-                    duration: 2,
+                    duration: dot.dur,
+                    ease: "linear",
                     repeat: Infinity,
-                    repeatType: "reverse",
-                    delay: i * 0.5,
-                  }}
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    marginLeft: "-8px",
-                    marginTop: "-8px",
-                    transform: `translate(${Math.cos(i * Math.PI / 2) * 180}px, ${Math.sin(i * Math.PI / 2) * 180}px)`,
+                    delay: dot.delay,
                   }}
                 />
               ))}
-              
-              {/* Profile image */}
-              <motion.div 
-                className="absolute inset-4 rounded-full overflow-hidden border-8 border-card shadow-2xl"
+
+              {/* Glow behind image */}
+              <div
+                className="absolute inset-8 rounded-full animate-glow-pulse"
+                style={{
+                  background: "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)",
+                  filter: "blur(20px)",
+                }}
+              />
+
+              {/* Profile image — hex clip */}
+              <motion.div
+                className="absolute inset-10 overflow-hidden hex-clip"
+                style={{
+                  background: "linear-gradient(135deg, #7c3aed22, #06b6d422)",
+                }}
                 whileHover={{ scale: 1.03 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
                 <Image
                   src="/images/profile.jpg"
-                  alt="Professional headshot of Saikrishna Kotagiri, a senior full stack developer, showing him smiling against a neutral background"
+                  alt="Saikrishna Kotagiri — Senior Full Stack Developer"
                   fill
                   style={{ objectFit: "cover" }}
-                  className="rounded-full"
                   priority
                 />
+              </motion.div>
+
+              {/* Floating badge — top right */}
+              <motion.div
+                className="absolute -top-4 -right-4 glass-card px-3 py-2 rounded-xl shadow-xl"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🚀</span>
+                  <div>
+                    <div className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>Open to</div>
+                    <div className="text-xs font-semibold text-white">Opportunities</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating badge — bottom left */}
+              <motion.div
+                className="absolute -bottom-4 -left-4 glass-card px-3 py-2 rounded-xl shadow-xl"
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⚡</span>
+                  <div>
+                    <div className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>Experience</div>
+                    <div className="text-xs font-semibold text-white">5+ Years</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating badge — left */}
+              <motion.div
+                className="absolute top-1/2 -left-12 -translate-y-1/2 glass-card px-3 py-2 rounded-xl shadow-xl"
+                animate={{ x: [0, -4, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              >
+                <div className="text-center">
+                  <div className="text-lg font-bold" style={{ color: "var(--accent-hover)" }}>20+</div>
+                  <div className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>Projects</div>
+                </div>
               </motion.div>
             </div>
           </motion.div>
         </div>
+
+        {/* ── Scroll indicator ── */}
+        <motion.div
+          className="flex flex-col items-center gap-2 mt-16"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+        >
+          <span className="font-mono text-[10px] tracking-[0.25em] uppercase" style={{ color: "var(--text-muted)" }}>
+            scroll
+          </span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{ color: "var(--text-muted)" }}
+          >
+            <ArrowDown size={14} />
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
-} 
+}
