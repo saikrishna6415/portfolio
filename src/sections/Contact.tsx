@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter, ArrowUpRight } from "lucide-react";
+import { animate, stagger } from "animejs";
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter, ArrowUpRight, Sparkles } from "lucide-react";
+import SectionReveal from "@/components/SectionReveal";
+import { triggerParticleBurst } from "@/utils/animeEffects";
 
 type FormField = "name" | "email" | "subject" | "message";
 
@@ -59,13 +62,36 @@ function InputField({
   error?: string;
   touched: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onFocus: () => void;
-  onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFocus?: () => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   inputRef?: React.RefObject<HTMLInputElement | null>;
   rows?: number;
 }) {
   const isValid = touched && !error && value.length > 0;
   const isError = touched && !!error;
+  const elRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (onFocus) onFocus();
+    animate(e.currentTarget, {
+      borderColor: ["rgba(255,255,255,0.08)", "#7c3aed"],
+      boxShadow: ["0 0 0px rgba(124,58,237,0)", "0 0 20px rgba(124,58,237,0.3)"],
+      duration: 400,
+      easing: "outQuad",
+    });
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (onBlur) onBlur(e);
+    if (!isError && !isValid) {
+      animate(e.currentTarget, {
+        borderColor: "rgba(255,255,255,0.08)",
+        boxShadow: "0 0 0px rgba(0,0,0,0)",
+        duration: 300,
+        easing: "outQuad",
+      });
+    }
+  };
 
   const baseStyle: React.CSSProperties = {
     width: "100%",
@@ -78,7 +104,7 @@ function InputField({
     fontSize: "0.9rem",
     fontFamily: "inherit",
     transition: "all 0.2s ease",
-    resize: rows ? "none" as const : undefined,
+    resize: rows ? ("none" as const) : undefined,
   };
 
   const commonProps = {
@@ -86,16 +112,10 @@ function InputField({
     name: id,
     value,
     onChange,
-    onFocus,
-    onBlur,
+    onFocus: handleInputFocus,
+    onBlur: handleInputBlur,
     required: true,
     style: baseStyle,
-    onMouseEnter: (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (!isError && !isValid) (e.target as HTMLElement).style.borderColor = "rgba(124,58,237,0.4)";
-    },
-    onMouseLeave: (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (!isError && !isValid) (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
-    },
   };
 
   return (
@@ -104,14 +124,17 @@ function InputField({
         {label}
       </label>
       {rows ? (
-        <textarea {...commonProps} rows={rows}
-          style={{ ...baseStyle, resize: "none" }}
-        />
+        <textarea {...commonProps} rows={rows} />
       ) : (
         <input
           {...commonProps}
           type={type}
-          ref={inputRef as React.RefObject<HTMLInputElement>}
+          ref={(node) => {
+            elRef.current = node;
+            if (inputRef) {
+              (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+            }
+          }}
         />
       )}
       <AnimatePresence>
@@ -133,7 +156,9 @@ function InputField({
 }
 
 export default function Contact() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const infoCardsRef = useRef<HTMLDivElement>(null);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-80px" });
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -145,6 +170,18 @@ export default function Contact() {
     name: false, email: false, subject: false, message: false,
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  useEffect(() => {
+    if (inView && infoCardsRef.current) {
+      animate(infoCardsRef.current.children, {
+        opacity: [0, 1],
+        translateX: [-30, 0],
+        duration: 700,
+        delay: stagger(100),
+        easing: "outElastic(1, .8)",
+      });
+    }
+  }, [inView]);
 
   const validate = (field: FormField, val: string) => {
     if (field === "name") return val.trim().length < 2 ? "At least 2 characters required" : "";
@@ -185,6 +222,9 @@ export default function Contact() {
       });
       if (res.ok) {
         setStatus("success");
+        if (submitBtnRef.current) {
+          triggerParticleBurst(submitBtnRef.current, { count: 32, distance: 120 });
+        }
         setFormData({ name: "", email: "", subject: "", message: "" });
         setTouched({ name: false, email: false, subject: false, message: false });
         setTimeout(() => setStatus("idle"), 5000);
@@ -215,15 +255,18 @@ export default function Contact() {
           Get In Touch
         </motion.div>
 
-        <motion.h2 className="font-display font-bold mb-4 text-white"
-          style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-          initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}>
-          Let&apos;s Build{" "}
-          <span className="bg-clip-text text-transparent"
-            style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}>
-            Something Great
-          </span>
-        </motion.h2>
+        <div className="mb-4">
+          <SectionReveal>
+            <h2 className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}>
+              Let&apos;s Build{" "}
+              <span className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}>
+                Something Great
+              </span>
+            </h2>
+          </SectionReveal>
+        </div>
 
         <motion.p className="mb-14 max-w-xl text-base" style={{ color: "var(--text-secondary)" }}
           initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 0.2 }}>
@@ -232,20 +275,32 @@ export default function Contact() {
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* ── Left: Info panel ── */}
-          <motion.div className="lg:col-span-2 space-y-5"
-            initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7, delay: 0.2 }}>
-
+          <div ref={infoCardsRef} className="lg:col-span-2 space-y-5">
             {/* Contact cards */}
-            {contactInfo.map((item, i) => (
-              <motion.div key={item.label}
-                initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.25 + i * 0.1 }}>
+            {contactInfo.map((item) => (
+              <div key={item.label} className="opacity-0">
                 {item.href ? (
                   <a href={item.href} target={item.href.startsWith("mailto") || item.href.startsWith("tel") ? undefined : "_blank"}
                     rel="noopener noreferrer" className="group flex items-center gap-4 p-4 rounded-xl transition-all duration-300"
                     style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${item.color}35`; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${item.glow}`; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
+                    onMouseEnter={e => {
+                      animate(e.currentTarget, {
+                        translateX: 6,
+                        duration: 250,
+                        easing: "outQuad",
+                      });
+                      (e.currentTarget as HTMLElement).style.borderColor = `${item.color}35`;
+                      (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${item.glow}`;
+                    }}
+                    onMouseLeave={e => {
+                      animate(e.currentTarget, {
+                        translateX: 0,
+                        duration: 250,
+                        easing: "outQuad",
+                      });
+                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                    }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ background: `${item.color}18`, color: item.color }}>
                       {item.icon}
@@ -269,11 +324,11 @@ export default function Contact() {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             ))}
 
             {/* Social links */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.55 }}>
+            <div className="opacity-0">
               <div className="text-[10px] font-mono tracking-widest uppercase mb-3" style={{ color: "var(--text-muted)" }}>Connect</div>
               <div className="flex gap-2">
                 {socials.map(s => (
@@ -285,10 +340,10 @@ export default function Contact() {
                   </motion.a>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Availability card */}
-            <motion.div className="p-4 rounded-xl" initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 0.65 }}
+            <div className="p-4 rounded-xl opacity-0"
               style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)" }}>
               <div className="flex items-center gap-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -297,8 +352,8 @@ export default function Contact() {
                   <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>Open to full-time & freelance</div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* ── Right: Contact form ── */}
           <motion.div className="lg:col-span-3"
@@ -329,19 +384,19 @@ export default function Contact() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <InputField id="name" label="Your Name" value={formData.name}
                         error={errors.name} touched={touched.name}
-                        onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} inputRef={nameRef} />
+                        onChange={handleChange} onBlur={handleBlur} inputRef={nameRef} />
                       <InputField id="email" label="Email Address" type="email" value={formData.email}
                         error={errors.email} touched={touched.email}
-                        onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} />
+                        onChange={handleChange} onBlur={handleBlur} />
                     </div>
 
                     <InputField id="subject" label="Subject" value={formData.subject}
                       error={errors.subject} touched={touched.subject}
-                      onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} />
+                      onChange={handleChange} onBlur={handleBlur} />
 
                     <InputField id="message" label="Message" value={formData.message}
                       error={errors.message} touched={touched.message}
-                      onChange={handleChange} onFocus={() => {}} onBlur={handleBlur} rows={5} />
+                      onChange={handleChange} onBlur={handleBlur} rows={5} />
 
                     {/* Error banner */}
                     <AnimatePresence>
@@ -356,11 +411,27 @@ export default function Contact() {
                     </AnimatePresence>
 
                     <div className="flex justify-end pt-2">
-                      <motion.button type="submit" disabled={status === "submitting"}
-                        className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm text-white transition-all duration-300 disabled:opacity-60"
+                      <button
+                        ref={submitBtnRef}
+                        type="submit"
+                        disabled={status === "submitting"}
+                        className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm text-white transition-all duration-300 disabled:opacity-60 hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
                         style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
-                        whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(124,58,237,0.4)" }}
-                        whileTap={{ scale: 0.97 }}>
+                        onMouseEnter={(e) => {
+                          animate(e.currentTarget, {
+                            scale: 1.05,
+                            duration: 300,
+                            easing: "outElastic(1, .5)",
+                          });
+                        }}
+                        onMouseLeave={(e) => {
+                          animate(e.currentTarget, {
+                            scale: 1,
+                            duration: 300,
+                            easing: "outQuad",
+                          });
+                        }}
+                      >
                         {status === "submitting" ? (
                           <>
                             <motion.div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
@@ -368,9 +439,9 @@ export default function Contact() {
                             Sending...
                           </>
                         ) : (
-                          <><Send size={16} /> Send Message</>
+                          <><Sparkles size={16} className="text-cyan-300" /><Send size={16} /> Send Message</>
                         )}
-                      </motion.button>
+                      </button>
                     </div>
                   </motion.form>
                 )}

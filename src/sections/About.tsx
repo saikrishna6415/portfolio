@@ -1,51 +1,48 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import { animate, stagger } from "animejs";
 import { MapPin, Code2, Zap, BookOpen } from "lucide-react";
+import SectionReveal from "@/components/SectionReveal";
+import InteractiveConsole from "@/components/InteractiveConsole";
+import { animateElasticCounter } from "@/utils/animeEffects";
 
-function AnimatedNumber({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
+function AnimeCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const numRef = useRef<HTMLSpanElement>(null);
+  const inView = useInView(numRef, { once: true });
 
   useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const duration = 1400;
-    const step = Math.ceil(target / (duration / 16));
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(start);
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [inView, target]);
+    if (inView && numRef.current) {
+      animateElasticCounter(numRef.current, target, { suffix, duration: 1600 });
+    }
+  }, [inView, target, suffix]);
 
   return (
-    <span ref={ref} className="tabular-nums">
-      {count}
-      {suffix}
+    <span ref={numRef} className="tabular-nums inline-block">
+      0{suffix}
     </span>
   );
 }
 
 export default function About() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const bentoGridRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-  };
-  const cellVariants = {
-    hidden: { opacity: 0, y: 24 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
-  };
+  useEffect(() => {
+    if (inView && bentoGridRef.current) {
+      const cards = bentoGridRef.current.children;
+      animate(cards, {
+        opacity: [0, 1],
+        translateY: [40, 0],
+        scale: [0.95, 1],
+        delay: stagger(100, { start: 100 }),
+        duration: 800,
+        ease: "outElastic(1, .75)",
+      });
+    }
+  }, [inView]);
 
   return (
     <section id="about" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--surface)" }}>
@@ -65,28 +62,36 @@ export default function About() {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section label */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={sectionRef}>
+        {/* Section label & heading reveal */}
         <motion.div
           className="section-label mb-6"
           initial={{ opacity: 0, x: -20 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
-          About Me
+          01 // ARCHITECTURE & VISION
         </motion.div>
 
-        <motion.div
-          ref={sectionRef}
-          variants={containerVariants}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
+        <div className="mb-12">
+          <SectionReveal>
+            <h2 className="font-display font-bold text-white text-3xl md:text-5xl">
+              Architecting Applications with{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-cyan-400 to-fuchsia-400">
+                Precision & Passion
+              </span>
+            </h2>
+          </SectionReveal>
+        </div>
+
+        {/* Bento Grid */}
+        <div
+          ref={bentoGridRef}
           className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(140px,auto)]"
         >
           {/* ── Cell 1: Big quote (spans 8 cols) ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-8 relative rounded-2xl p-8 md:p-10 overflow-hidden group"
+          <div
+            className="md:col-span-8 relative rounded-2xl p-8 md:p-10 overflow-hidden group opacity-0"
             style={{
               background: "linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(6,182,212,0.06) 100%)",
               border: "1px solid rgba(124,58,237,0.2)",
@@ -114,12 +119,11 @@ export default function About() {
               Senior Full Stack Developer with 5+ years shipping high-performance web & mobile apps
               across React, React Native, and modern backend stacks.
             </p>
-          </motion.div>
+          </div>
 
           {/* ── Cell 2: Years stat ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-4 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+          <div
+            className="md:col-span-4 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden opacity-0"
             style={{
               background: "rgba(6,182,212,0.07)",
               border: "1px solid rgba(6,182,212,0.18)",
@@ -130,18 +134,17 @@ export default function About() {
             </div>
             <div>
               <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
-                <AnimatedNumber target={5} suffix="+" />
+                <AnimeCounter target={5} suffix="+" />
               </div>
               <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-cyan)" }}>
                 Years Experience
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Cell 3: Projects stat ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+          <div
+            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden opacity-0"
             style={{
               background: "rgba(236,72,153,0.07)",
               border: "1px solid rgba(236,72,153,0.18)",
@@ -152,18 +155,17 @@ export default function About() {
             </div>
             <div>
               <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
-                <AnimatedNumber target={20} suffix="+" />
+                <AnimeCounter target={20} suffix="+" />
               </div>
               <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-fuchsia)" }}>
                 Projects Shipped
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Cell 4: Articles stat ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden"
+          <div
+            className="md:col-span-3 relative rounded-2xl p-6 flex flex-col justify-between group overflow-hidden opacity-0"
             style={{
               background: "rgba(124,58,237,0.07)",
               border: "1px solid rgba(124,58,237,0.2)",
@@ -174,18 +176,17 @@ export default function About() {
             </div>
             <div>
               <div className="font-display font-black text-6xl md:text-7xl leading-none text-white">
-                <AnimatedNumber target={8} suffix="+" />
+                <AnimeCounter target={8} suffix="+" />
               </div>
               <div className="font-mono text-xs tracking-widest uppercase mt-1" style={{ color: "var(--accent-hover)" }}>
                 Articles Published
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Cell 5: Bio text ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-6 relative rounded-2xl p-6 md:p-8 overflow-hidden"
+          <div
+            className="md:col-span-6 relative rounded-2xl p-6 md:p-8 overflow-hidden opacity-0"
             style={{
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.06)",
@@ -215,12 +216,11 @@ export default function About() {
                 reducing crash rates for thousands of users.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Cell 6: Location/availability ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-4 relative rounded-2xl p-6 overflow-hidden group flex flex-col justify-between"
+          <div
+            className="md:col-span-4 relative rounded-2xl p-6 overflow-hidden group flex flex-col justify-between opacity-0"
             style={{
               background: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.06)",
@@ -244,12 +244,11 @@ export default function About() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-mono text-xs text-emerald-400">Available now</span>
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Cell 7: Tech highlights ── */}
-          <motion.div
-            variants={cellVariants}
-            className="md:col-span-8 relative rounded-2xl p-6 overflow-hidden"
+          <div
+            className="md:col-span-8 relative rounded-2xl p-6 overflow-hidden opacity-0"
             style={{
               background: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.06)",
@@ -273,22 +272,32 @@ export default function About() {
                 { name: "GitHub Actions", color: "#2088FF" },
                 { name: "Fastlane", color: "#00F200" },
               ].map((tech) => (
-                <motion.span
+                <span
                   key={tech.name}
-                  className="tech-pill cursor-default"
-                  whileHover={{ scale: 1.05 }}
+                  className="tech-pill cursor-pointer inline-block"
                   style={{
                     borderColor: `${tech.color}30`,
                     color: tech.color,
                     background: `${tech.color}0d`,
                   }}
+                  onMouseEnter={(e) => {
+                    animate(e.currentTarget, {
+                      scale: [1, 1.15, 1],
+                      rotate: [0, 4, -4, 0],
+                      duration: 450,
+                      ease: "outElastic(1, .5)",
+                    });
+                  }}
                 >
                   {tech.name}
-                </motion.span>
+                </span>
               ))}
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
+
+        {/* Live Interactive Code Terminal Console */}
+        <InteractiveConsole />
       </div>
     </section>
   );

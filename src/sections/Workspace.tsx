@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { animate, stagger } from "animejs";
 import { Monitor, Laptop, Cpu, LayoutGrid, Headphones, Coffee, ArrowLeft, ArrowRight, Maximize2, X } from "lucide-react";
 import Image from "next/image";
+import SectionReveal from "@/components/SectionReveal";
 
 const workspaceImages = [
   {
@@ -36,7 +38,8 @@ const specs = [
 ];
 
 export default function Workspace() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const specsGridRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-80px" });
   const [current, setCurrent] = useState(0);
   const [modal, setModal] = useState<number | null>(null);
@@ -48,6 +51,19 @@ export default function Workspace() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  useEffect(() => {
+    if (inView && specsGridRef.current) {
+      animate(specsGridRef.current.children, {
+        opacity: [0, 1],
+        scale: [0.9, 1],
+        translateX: [20, 0],
+        duration: 700,
+        delay: stagger(80),
+        easing: "outElastic(1, .8)",
+      });
+    }
+  }, [inView]);
 
   const prev = () => setCurrent(c => (c === 0 ? workspaceImages.length - 1 : c - 1));
   const next = () => setCurrent(c => (c + 1) % workspaceImages.length);
@@ -66,14 +82,17 @@ export default function Workspace() {
           initial={{ opacity: 0, x: -20 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5 }}>
           Setup
         </motion.div>
-        <motion.h2 className="font-display font-bold mb-16 text-white"
-          style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-          initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}>
-          My Dev{" "}
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}>
-            Workspace
-          </span>
-        </motion.h2>
+        <div className="mb-16">
+          <SectionReveal>
+            <h2 className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}>
+              My Dev{" "}
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}>
+                Workspace
+              </span>
+            </h2>
+          </SectionReveal>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
           {/* ── Image gallery ── */}
@@ -154,15 +173,31 @@ export default function Workspace() {
               My workspace is engineered for peak productivity — powerful hardware, an ergonomic setup, and a distraction-free environment designed to ship exceptional software.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {specs.map((spec, i) => (
-                <motion.div key={spec.label}
-                  className="flex items-center gap-4 p-4 rounded-xl group transition-all duration-300"
+            <div ref={specsGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {specs.map((spec) => (
+                <div key={spec.label}
+                  className="flex items-center gap-4 p-4 rounded-xl group transition-all duration-300 opacity-0"
                   style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.35 + i * 0.07 }}
-                  whileHover={{ borderColor: `${spec.color}35`, boxShadow: `0 0 20px ${spec.color}20`, y: -2 }}>
+                  onMouseEnter={(e) => {
+                    animate(e.currentTarget, {
+                      translateY: -3,
+                      scale: 1.02,
+                      duration: 300,
+                      easing: "outQuad",
+                    });
+                    e.currentTarget.style.borderColor = `${spec.color}35`;
+                    e.currentTarget.style.boxShadow = `0 0 20px ${spec.color}20`;
+                  }}
+                  onMouseLeave={(e) => {
+                    animate(e.currentTarget, {
+                      translateY: 0,
+                      scale: 1,
+                      duration: 300,
+                      easing: "outQuad",
+                    });
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${spec.color}18`, color: spec.color }}>
                     {spec.icon}
@@ -171,7 +206,7 @@ export default function Workspace() {
                     <div className="text-[10px] font-mono tracking-widest uppercase mb-0.5" style={{ color: "var(--text-muted)" }}>{spec.label}</div>
                     <div className="text-sm font-medium text-white">{spec.value}</div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 

@@ -2,13 +2,30 @@
 
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail, ArrowUpRight, MapPin } from "lucide-react";
-import { useRef } from "react";
+import { Github, Linkedin, Twitter, Mail, ArrowUpRight, MapPin, Sparkles } from "lucide-react";
+import { useRef, useEffect } from "react";
+import { animate } from "animejs";
+import SectionReveal from "@/components/SectionReveal";
+import { scrambleText, triggerParticleBurst } from "@/utils/animeEffects";
 
 export default function Footer() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const ctaHeadingRef = useRef<HTMLHeadingElement>(null);
+  const emailCtaRef = useRef<HTMLAnchorElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    if (inView && ctaHeadingRef.current) {
+      scrambleText(ctaHeadingRef.current, "Have an idea? Let's build it.", { duration: 1600 });
+    }
+  }, [inView]);
+
+  const handleEmailClick = () => {
+    if (emailCtaRef.current) {
+      triggerParticleBurst(emailCtaRef.current, { count: 28, distance: 100 });
+    }
+  };
 
   const socials = [
     { icon: <Github size={18} />, href: "https://github.com/saikrishna6415", label: "GitHub" },
@@ -34,9 +51,9 @@ export default function Footer() {
       {/* Giant CTA section */}
       <div className="relative py-20 md:py-28 overflow-hidden">
         {/* Background stencil */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
           <span
-            className="font-display font-black select-none whitespace-nowrap"
+            className="font-display font-black whitespace-nowrap"
             style={{
               fontSize: "clamp(60px, 16vw, 200px)",
               WebkitTextStroke: "1px rgba(255,255,255,0.03)",
@@ -79,21 +96,17 @@ export default function Footer() {
             Get In Touch
           </motion.div>
 
-          <motion.h2
-            className="font-display font-bold mb-6 text-white leading-tight"
-            style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.1 }}
-          >
-            Have an idea?{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #06b6d4 50%, #ec4899 100%)", backgroundSize: "200%", animation: "shimmer-slide 4s linear infinite" }}
-            >
-              Let&apos;s build it.
-            </span>
-          </motion.h2>
+          <div className="mb-6 flex justify-center">
+            <SectionReveal>
+              <h2
+                ref={ctaHeadingRef}
+                className="font-display font-bold text-white leading-tight"
+                style={{ fontSize: "clamp(2.2rem, 6vw, 4.5rem)" }}
+              >
+                Have an idea? Let&apos;s build it.
+              </h2>
+            </SectionReveal>
+          </div>
 
           <motion.p
             className="text-base md:text-lg mb-10 max-w-lg mx-auto"
@@ -105,33 +118,25 @@ export default function Footer() {
             I&apos;m always open to new opportunities, interesting projects, and creative collaborations.
           </motion.p>
 
-          {/* Email CTA */}
-          <motion.a
+          {/* Email CTA with Anime.js Particle Burst */}
+          <a
+            ref={emailCtaRef}
             href="mailto:saikrishnakotagiri16@gmail.com"
-            className="group inline-flex items-center gap-3 px-8 py-4 rounded-full font-display font-semibold text-base md:text-lg text-white transition-all duration-300"
+            onClick={handleEmailClick}
+            className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full font-display font-semibold text-base md:text-lg text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(124,58,237,0.5)]"
             style={{
               background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
-              boxShadow: "0 0 0 rgba(124,58,237,0)",
             }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(124,58,237,0.5)" }}
-            whileTap={{ scale: 0.98 }}
           >
-            saikrishnakotagiri16@gmail.com
+            <Sparkles size={18} className="text-cyan-300 animate-pulse" />
+            <span>saikrishnakotagiri16@gmail.com</span>
             <ArrowUpRight size={20} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </motion.a>
+          </a>
 
           {/* Social row */}
-          <motion.div
-            className="flex items-center justify-center gap-3 mt-8"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.5 }}
-          >
+          <div className="flex items-center justify-center gap-3 mt-8">
             {socials.map((social, i) => (
-              <motion.a
+              <a
                 key={i}
                 href={social.href}
                 target="_blank"
@@ -143,17 +148,31 @@ export default function Footer() {
                   border: "1px solid rgba(255,255,255,0.08)",
                   color: "var(--text-secondary)",
                 }}
-                whileHover={{
-                  scale: 1.15,
-                  backgroundColor: "rgba(124,58,237,0.15)",
-                  borderColor: "rgba(124,58,237,0.4)",
-                  color: "#a78bfa",
+                onMouseEnter={(e) => {
+                  animate(e.currentTarget, {
+                    scale: 1.2,
+                    rotate: 15,
+                    duration: 300,
+                    easing: "outElastic(1, .5)",
+                  });
+                  e.currentTarget.style.borderColor = "rgba(124,58,237,0.4)";
+                  e.currentTarget.style.color = "#a78bfa";
+                }}
+                onMouseLeave={(e) => {
+                  animate(e.currentTarget, {
+                    scale: 1,
+                    rotate: 0,
+                    duration: 300,
+                    easing: "outQuad",
+                  });
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                  e.currentTarget.style.color = "var(--text-secondary)";
                 }}
               >
                 {social.icon}
-              </motion.a>
+              </a>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
 

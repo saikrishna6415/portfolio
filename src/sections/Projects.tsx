@@ -1,9 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import { animate } from "animejs";
 import { Monitor, Smartphone, ArrowRight } from "lucide-react";
 import TiltCard from "@/components/TiltCard";
+import SectionReveal from "@/components/SectionReveal";
+import { scrambleText } from "@/utils/animeEffects";
 
 const projects = [
   {
@@ -122,21 +125,20 @@ export default function Projects() {
           </motion.div>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <motion.h2
-              className="font-display font-bold text-white"
-              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              Projects &{" "}
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #ec4899)" }}
+            <SectionReveal>
+              <h2
+                className="font-display font-bold text-white"
+                style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
               >
-                Builds
-              </span>
-            </motion.h2>
+                Projects &{" "}
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #ec4899)" }}
+                >
+                  Builds
+                </span>
+              </h2>
+            </SectionReveal>
 
             <motion.p
               className="text-sm font-mono md:text-right"
@@ -192,16 +194,33 @@ function ProjectCard({
   project: (typeof projects)[number];
   index: number;
 }) {
-  const cardRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const numberRef = useRef<HTMLDivElement>(null);
   const cardInView = useInView(cardRef, { once: true });
 
+  useEffect(() => {
+    if (cardInView && cardRef.current) {
+      animate(cardRef.current, {
+        opacity: [0, 1],
+        rotateY: [-45, 0],
+        translateY: [40, 0],
+        scale: [0.9, 1],
+        duration: 900,
+        delay: index * 100,
+        easing: "outElastic(1, .8)",
+      });
+
+      if (numberRef.current) {
+        scrambleText(numberRef.current, project.number, { duration: 1000 });
+      }
+    }
+  }, [cardInView, index, project.number]);
+
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      className="flex-shrink-0 snap-start w-[300px] md:w-[360px] lg:w-[400px]"
-      initial={{ opacity: 0, y: 40 }}
-      animate={cardInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      className="flex-shrink-0 snap-start w-[300px] md:w-[360px] lg:w-[400px] opacity-0"
+      style={{ transformStyle: "preserve-3d" }}
     >
       <TiltCard
         tiltAmount={8}
@@ -215,94 +234,95 @@ function ProjectCard({
           transition: "box-shadow 0.3s",
         }}
       >
-      {/* Color glow top border */}
-      <div
-        className="h-1 w-full flex-shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${project.accent}, ${project.accent}60)`,
-          boxShadow: `0 0 16px ${project.glow}`,
-        }}
-      />
+        {/* Color glow top border */}
+        <div
+          className="h-1 w-full flex-shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${project.accent}, ${project.accent}60)`,
+            boxShadow: `0 0 16px ${project.glow}`,
+          }}
+        />
 
-      {/* Card content */}
-      <div className="flex flex-col flex-1 p-6 md:p-7">
-        {/* Header row */}
-        <div className="flex items-start justify-between mb-5">
-          <div
-            className="text-4xl font-display font-black leading-none select-none opacity-20 group-hover:opacity-40 transition-opacity duration-300"
-            style={{ color: project.accent }}
-          >
-            {project.number}
+        {/* Card content */}
+        <div className="flex flex-col flex-1 p-6 md:p-7">
+          {/* Header row */}
+          <div className="flex items-start justify-between mb-5">
+            <div
+              ref={numberRef}
+              className="text-4xl font-display font-black leading-none select-none opacity-30 group-hover:opacity-60 transition-opacity duration-300"
+              style={{ color: project.accent }}
+            >
+              {project.number}
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
+                style={{
+                  background: `${project.accent}15`,
+                  border: `1px solid ${project.accent}30`,
+                  color: project.accent,
+                }}
+              >
+                {project.platform === "Mobile" ? <Smartphone size={10} /> : <Monitor size={10} />}
+                {project.platform}
+              </span>
+              <span
+                className="px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {project.type}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
-              style={{
-                background: `${project.accent}15`,
-                border: `1px solid ${project.accent}30`,
-                color: project.accent,
-              }}
+
+          {/* Emoji + Title */}
+          <div className="mb-3">
+            <span className="text-3xl mb-2 block">{project.emoji}</span>
+            <h3
+              className="font-display font-bold text-xl md:text-2xl text-white leading-tight group-hover:text-opacity-90 transition-colors"
             >
-              {project.platform === "Mobile" ? <Smartphone size={10} /> : <Monitor size={10} />}
-              {project.platform}
-            </span>
-            <span
-              className="px-2.5 py-1 rounded-full text-[10px] font-mono font-medium"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                color: "var(--text-muted)",
-              }}
+              {project.title}
+            </h3>
+          </div>
+
+          {/* Description */}
+          <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "var(--text-secondary)" }}>
+            {project.description}
+          </p>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-1.5 mb-5">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className="tech-pill"
+                style={{
+                  color: project.accent,
+                  borderColor: `${project.accent}30`,
+                  background: `${project.accent}0d`,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Footer arrow */}
+          <div className="flex items-center gap-2 text-xs font-mono mt-auto pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)", color: "var(--text-muted)" }}>
+            <span>View details</span>
+            <div
+              className="group-hover:translate-x-1.5 transition-transform duration-200"
+              style={{ color: project.accent }}
             >
-              {project.type}
-            </span>
+              <ArrowRight size={14} />
+            </div>
           </div>
         </div>
-
-        {/* Emoji + Title */}
-        <div className="mb-3">
-          <span className="text-3xl mb-2 block">{project.emoji}</span>
-          <h3
-            className="font-display font-bold text-xl md:text-2xl text-white leading-tight group-hover:text-opacity-90 transition-colors"
-          >
-            {project.title}
-          </h3>
-        </div>
-
-        {/* Description */}
-        <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "var(--text-secondary)" }}>
-          {project.description}
-        </p>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 mb-5">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="tech-pill"
-              style={{
-                color: project.accent,
-                borderColor: `${project.accent}30`,
-                background: `${project.accent}0d`,
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Footer arrow */}
-        <div className="flex items-center gap-2 text-xs font-mono mt-auto pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)", color: "var(--text-muted)" }}>
-          <span>View details</span>
-          <motion.div
-            className="group-hover:translate-x-1 transition-transform"
-            style={{ color: project.accent }}
-          >
-            <ArrowRight size={14} />
-          </motion.div>
-        </div>
-      </div>
       </TiltCard>
-    </motion.div>
+    </div>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import { animate } from "animejs";
 import { Briefcase, Calendar, MapPin, ChevronRight } from "lucide-react";
+import SectionReveal from "@/components/SectionReveal";
 
 const experiences = [
   {
@@ -11,8 +13,8 @@ const experiences = [
     location: "Mumbai, Maharashtra (Remote)",
     period: "June 2020 – Present",
     current: true,
-    color: "#7c3aed",
-    glowColor: "rgba(124,58,237,0.25)",
+    color: "#a855f7",
+    glowColor: "rgba(168,85,247,0.25)",
     tags: ["React Native", "Redux", "Spring Boot", "AWS", "Firebase", "Fastlane"],
     description: [
       "Designed & developed a cross-platform iOS/Android app for chronic health management with React Native & Redux — features include meal/activity log, chat, and device data integration.",
@@ -40,8 +42,21 @@ const experiences = [
 ];
 
 export default function Experience() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const svgLineRef = useRef<SVGPathElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    if (inView && svgLineRef.current) {
+      const totalLen = svgLineRef.current.getTotalLength?.() || 1200;
+      animate(svgLineRef.current, {
+        strokeDashoffset: [totalLen, 0],
+        strokeDasharray: totalLen,
+        duration: 1800,
+        ease: "inOutCubic",
+      });
+    }
+  }, [inView]);
 
   return (
     <section id="experience" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--background)" }}>
@@ -50,12 +65,12 @@ export default function Experience() {
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] opacity-30"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(124,58,237,0.15) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(168,85,247,0.15) 0%, transparent 70%)",
           }}
         />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" ref={sectionRef}>
         {/* Section label */}
         <motion.div
           className="section-label mb-6"
@@ -63,39 +78,46 @@ export default function Experience() {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
-          Work Experience
+          02 // EXPERIENCE
         </motion.div>
 
-        {/* Section heading */}
-        <motion.h2
-          className="font-display font-bold mb-16 text-white"
-          style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          Where I&apos;ve{" "}
-          <span
-            className="bg-clip-text text-transparent"
-            style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}
-          >
-            Worked
-          </span>
-        </motion.h2>
+        {/* Section heading reveal */}
+        <div className="mb-16">
+          <SectionReveal>
+            <h2
+              className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
+            >
+              Engineering{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #c084fc, #06b6d4)" }}
+              >
+                Track Record
+              </span>
+            </h2>
+          </SectionReveal>
+        </div>
 
-        <div ref={sectionRef} className="relative">
-          {/* Glowing timeline spine */}
-          <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px">
-            <motion.div
-              className="w-full h-full rounded-full"
-              style={{
-                background: "linear-gradient(180deg, #7c3aed 0%, #06b6d4 50%, #ec4899 100%)",
-                boxShadow: "0 0 12px rgba(124,58,237,0.4)",
-              }}
-              initial={{ scaleY: 0, originY: 0 }}
-              animate={inView ? { scaleY: 1 } : {}}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-            />
+        <div className="relative">
+          {/* SVG Animated Timeline Line-Draw */}
+          <div className="absolute left-6 md:left-8 top-0 bottom-0 w-4 -ml-2 pointer-events-none">
+            <svg className="w-full h-full preserve-3d" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="timelineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="50%" stopColor="#06b6d4" />
+                  <stop offset="100%" stopColor="#ec4899" />
+                </linearGradient>
+              </defs>
+              <path
+                ref={svgLineRef}
+                d="M8,0 L8,2000"
+                stroke="url(#timelineGrad)"
+                strokeWidth="2"
+                fill="none"
+              />
+            </svg>
           </div>
 
           {/* Experience items */}
@@ -114,20 +136,27 @@ function ExperienceCard({
   exp,
   index,
 }: {
-  exp: typeof experiences[number];
+  exp: (typeof experiences)[number];
   index: number;
 }) {
-  const cardRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
 
+  useEffect(() => {
+    if (cardInView && cardRef.current) {
+      animate(cardRef.current, {
+        opacity: [0, 1],
+        translateX: [-40, 0],
+        rotateZ: [-2, 0],
+        duration: 800,
+        delay: index * 150,
+        ease: "outElastic(1, .8)",
+      });
+    }
+  }, [cardInView, index]);
+
   return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, x: -30 }}
-      animate={cardInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-      className="relative"
-    >
+    <div ref={cardRef} className="relative opacity-0">
       {/* Timeline bullet */}
       <div
         className="absolute -left-[3.2rem] md:-left-[3.5rem] top-6 w-5 h-5 rounded-full flex items-center justify-center"
@@ -160,10 +189,22 @@ function ExperienceCard({
           border: `1px solid rgba(255,255,255,0.06)`,
         }}
         onMouseEnter={(e) => {
+          animate(e.currentTarget, {
+            scale: 1.015,
+            translateY: -4,
+            duration: 350,
+            ease: "outQuad",
+          });
           e.currentTarget.style.borderColor = `${exp.color}40`;
           e.currentTarget.style.boxShadow = `0 0 40px ${exp.glowColor}`;
         }}
         onMouseLeave={(e) => {
+          animate(e.currentTarget, {
+            scale: 1,
+            translateY: 0,
+            duration: 350,
+            ease: "outQuad",
+          });
           e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
           e.currentTarget.style.boxShadow = "none";
         }}
@@ -187,7 +228,7 @@ function ExperienceCard({
             }}
           >
             <Briefcase size={11} />
-            {exp.current ? "Current" : "Past"}
+            {exp.current ? "Current Role" : "Previous Role"}
           </div>
         </div>
 
@@ -214,13 +255,10 @@ function ExperienceCard({
         {/* Description bullets */}
         <ul className="space-y-2.5 mb-6">
           {exp.description.map((item, i) => (
-            <motion.li
+            <li
               key={i}
               className="flex gap-3 text-sm leading-relaxed"
               style={{ color: "var(--text-secondary)" }}
-              initial={{ opacity: 0, x: -10 }}
-              animate={cardInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: 0.3 + i * 0.08 }}
             >
               <ChevronRight
                 size={14}
@@ -228,19 +266,19 @@ function ExperienceCard({
                 style={{ color: exp.color }}
               />
               <span>{item}</span>
-            </motion.li>
+            </li>
           ))}
         </ul>
 
         {/* Tag row */}
         <div className="flex flex-wrap gap-2">
           {exp.tags.map((tag) => (
-            <span key={tag} className="tech-pill" style={{ color: exp.color, borderColor: `${exp.color}30`, background: `${exp.color}0d` }}>
+            <span key={tag} className="tech-pill cursor-default" style={{ color: exp.color, borderColor: `${exp.color}30`, background: `${exp.color}0d` }}>
               {tag}
             </span>
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

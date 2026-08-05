@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import FloatingContact from "@/components/FloatingContact";
 import CustomCursor from "@/components/CustomCursor";
 import MarqueeStrip from "@/components/MarqueeStrip";
+import WaveDivider from "@/components/WaveDivider";
+import MatrixHudOverlay from "@/components/MatrixHudOverlay";
 import Hero from "@/sections/Hero";
 import About from "@/sections/About";
 import Projects from "@/sections/Projects";
@@ -28,6 +30,7 @@ export default function Home() {
     <>
       {/* Global unique experiences */}
       <CustomCursor />
+      <MatrixHudOverlay />
 
       {/* Grain overlay */}
       <div
@@ -45,7 +48,8 @@ export default function Home() {
       <main id="main-content">
         <Hero />
 
-        {/* Marquee between Hero and About */}
+        {/* Morphing Wave & Marquee between Hero and About */}
+        <WaveDivider accentColor="#7c3aed" height={60} />
         <MarqueeStrip direction="left" speed={40} accent="#7c3aed" />
 
         <About />
@@ -53,7 +57,8 @@ export default function Home() {
           <Experience />
         </Suspense>
 
-        {/* Marquee between Experience and Projects */}
+        {/* Morphing Wave & Marquee between Experience and Projects */}
+        <WaveDivider accentColor="#06b6d4" height={60} flip />
         <MarqueeStrip direction="right" speed={30} accent="#06b6d4" />
 
         <Suspense fallback={<SectionLoading />}>
@@ -63,7 +68,8 @@ export default function Home() {
           <Skills />
         </Suspense>
 
-        {/* Marquee between Skills and Workspace */}
+        {/* Morphing Wave & Marquee between Skills and Workspace */}
+        <WaveDivider accentColor="#ec4899" height={60} />
         <MarqueeStrip direction="left" speed={45} accent="#ec4899" />
 
         <Suspense fallback={<SectionLoading />}>

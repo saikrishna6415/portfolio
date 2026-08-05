@@ -1,7 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { animate } from "animejs";
+import SectionReveal from "@/components/SectionReveal";
+import { animateElasticCounter } from "@/utils/animeEffects";
 
 const skillCategories = [
   {
@@ -66,24 +69,38 @@ const skillCategories = [
   },
 ];
 
-function SkillBar({ level, color }: { level: number; color: string }) {
-  const barRef = useRef(null);
+function AnimeSkillBar({ level, color }: { level: number; color: string }) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const fillRef = useRef<HTMLDivElement>(null);
   const inView = useInView(barRef, { once: true });
+
+  useEffect(() => {
+    if (inView && fillRef.current) {
+      animate(fillRef.current, {
+        width: ["0%", `${level}%`],
+        duration: 1400,
+        easing: "outElastic(1, .75)",
+      });
+    }
+  }, [inView, level]);
+
   return (
     <div ref={barRef} className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-      <motion.div
+      <div
+        ref={fillRef}
         className="h-full rounded-full"
-        style={{ background: `linear-gradient(90deg, ${color}, ${color}90)`, boxShadow: `0 0 8px ${color}60` }}
-        initial={{ width: 0 }}
-        animate={inView ? { width: `${level}%` } : {}}
-        transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+        style={{
+          width: "0%",
+          background: `linear-gradient(90deg, ${color}, ${color}90)`,
+          boxShadow: `0 0 8px ${color}60`,
+        }}
       />
     </div>
   );
 }
 
 export default function Skills() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-80px" });
   const [activeCategory, setActiveCategory] = useState(skillCategories[0].id);
 
@@ -117,21 +134,22 @@ export default function Skills() {
           Technical Arsenal
         </motion.div>
 
-        <motion.h2
-          className="font-display font-bold mb-4 text-white"
-          style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          Skills &{" "}
-          <span
-            className="bg-clip-text text-transparent"
-            style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}
-          >
-            Expertise
-          </span>
-        </motion.h2>
+        <div className="mb-4">
+          <SectionReveal>
+            <h2
+              className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
+            >
+              Skills &{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #06b6d4)" }}
+              >
+                Expertise
+              </span>
+            </h2>
+          </SectionReveal>
+        </div>
 
         <motion.p
           className="mb-12 max-w-xl text-base"
@@ -222,7 +240,7 @@ export default function Skills() {
                   <span style={{ color: "var(--text-secondary)" }}>{item.label}</span>
                   <span style={{ color: item.color }}>{item.value}%</span>
                 </div>
-                <SkillBar level={item.value} color={item.color} />
+                <AnimeSkillBar level={item.value} color={item.color} />
               </div>
             ))}
           </div>
@@ -243,36 +261,55 @@ function SkillCard({
   color: string;
   glow: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const numRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      animate(cardRef.current, {
+        opacity: [0, 1],
+        scale: [0.9, 1],
+        translateY: [20, 0],
+        duration: 600,
+        delay: index * 60,
+        easing: "outElastic(1, .8)",
+      });
+    }
+
+    if (numRef.current) {
+      animateElasticCounter(numRef.current, skill.level, { suffix: "%", duration: 1200 });
+    }
+  }, [index, skill.level]);
 
   return (
-    <motion.div
-      className="relative rounded-xl p-5 overflow-hidden group cursor-default transition-all duration-300"
+    <div
+      ref={cardRef}
+      className="relative rounded-xl p-5 overflow-hidden group cursor-default transition-all duration-300 opacity-0"
       style={{
         background: "rgba(13,17,23,0.7)",
         border: "1px solid rgba(255,255,255,0.06)",
       }}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.06, duration: 0.4 }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      whileHover={{
-        borderColor: `${color}40`,
-        boxShadow: `0 0 30px ${glow}`,
-        y: -3,
+      onMouseEnter={(e) => {
+        animate(e.currentTarget, {
+          translateY: -5,
+          scale: 1.02,
+          duration: 300,
+          easing: "outQuad",
+        });
+        e.currentTarget.style.borderColor = `${color}40`;
+        e.currentTarget.style.boxShadow = `0 0 30px ${glow}`;
+      }}
+      onMouseLeave={(e) => {
+        animate(e.currentTarget, {
+          translateY: 0,
+          scale: 1,
+          duration: 300,
+          easing: "outQuad",
+        });
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+        e.currentTarget.style.boxShadow = "none";
       }}
     >
-      {/* Background glow on hover */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        animate={{
-          opacity: hovered ? 1 : 0,
-          background: `radial-gradient(circle at 50% 50%, ${glow} 0%, transparent 70%)`,
-        }}
-        transition={{ duration: 0.3 }}
-      />
-
       <div className="relative z-10">
         {/* Icon + name row */}
         <div className="flex items-center justify-between mb-4">
@@ -281,15 +318,16 @@ function SkillCard({
             <span className="font-display font-semibold text-sm text-white">{skill.name}</span>
           </div>
           <span
+            ref={numRef}
             className="font-mono text-xs font-bold"
             style={{ color }}
           >
-            {skill.level}%
+            0%
           </span>
         </div>
 
         {/* Progress bar */}
-        <SkillBar level={skill.level} color={color} />
+        <AnimeSkillBar level={skill.level} color={color} />
 
         {/* Level label */}
         <div className="mt-3 text-right">
@@ -304,6 +342,6 @@ function SkillCard({
           </span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

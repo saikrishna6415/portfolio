@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { animate, stagger } from "animejs";
 import { Clock, ExternalLink, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import Link from "next/link";
+import SectionReveal from "@/components/SectionReveal";
 
 const publications = [
   {
@@ -93,9 +95,24 @@ const publications = [
 ];
 
 export default function Publications() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { once: true, margin: "-80px" });
   const [expanded, setExpanded] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (inView && gridRef.current) {
+      const cards = gridRef.current.children;
+      animate(cards, {
+        opacity: [0, 1],
+        translateY: [40, 0],
+        rotateZ: [-3, 0],
+        duration: 800,
+        delay: stagger(90),
+        ease: "outElastic(1, .8)",
+      });
+    }
+  }, [inView]);
 
   return (
     <section id="publications" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--surface)" }}>
@@ -109,19 +126,20 @@ export default function Publications() {
         {/* Header */}
         <motion.div className="section-label mb-6"
           initial={{ opacity: 0, x: -20 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5 }}>
-          Writing
+          05 // PUBLICATIONS
         </motion.div>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
-          <motion.h2 className="font-display font-bold text-white"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}
-            initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}>
-            Publications &{" "}
-            <span className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #ec4899)" }}>
-              Articles
-            </span>
-          </motion.h2>
+          <SectionReveal>
+            <h2 className="font-display font-bold text-white"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)" }}>
+              Publications &{" "}
+              <span className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #ec4899)" }}>
+                Articles
+              </span>
+            </h2>
+          </SectionReveal>
           <motion.a href="https://medium.com/@saikrishnakotagiri16" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm font-mono transition-colors"
             style={{ color: "var(--text-muted)" }}
@@ -132,9 +150,9 @@ export default function Publications() {
         </div>
 
         {/* Publications grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {publications.map((pub, i) => (
-            <PublicationCard key={i} pub={pub} index={i} expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)} inView={inView} />
+            <PublicationCard key={i} pub={pub} expanded={expanded === i} onToggle={() => setExpanded(expanded === i ? null : i)} />
           ))}
         </div>
       </div>
@@ -142,33 +160,38 @@ export default function Publications() {
   );
 }
 
-function PublicationCard({ pub, index, expanded, onToggle, inView }: {
-  pub: typeof publications[number];
-  index: number;
+function PublicationCard({ pub, expanded, onToggle }: {
+  pub: (typeof publications)[number];
   expanded: boolean;
   onToggle: () => void;
-  inView: boolean;
 }) {
   return (
-    <motion.div
-      className="rounded-2xl overflow-hidden cursor-pointer group"
+    <div
+      className="rounded-2xl overflow-hidden cursor-pointer group opacity-0"
       style={{
         background: "rgba(13,17,23,0.75)",
         border: `1px solid ${expanded ? `${pub.accent}35` : "rgba(255,255,255,0.06)"}`,
         boxShadow: expanded ? `0 0 40px ${pub.glow}` : "none",
         transition: "border-color 0.3s, box-shadow 0.3s",
       }}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
       onMouseEnter={e => {
         if (!expanded) {
+          animate(e.currentTarget, {
+            translateY: -4,
+            duration: 300,
+            ease: "outQuad",
+          });
           (e.currentTarget as HTMLElement).style.borderColor = `${pub.accent}25`;
           (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${pub.glow}`;
         }
       }}
       onMouseLeave={e => {
         if (!expanded) {
+          animate(e.currentTarget, {
+            translateY: 0,
+            duration: 300,
+            ease: "outQuad",
+          });
           (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
           (e.currentTarget as HTMLElement).style.boxShadow = "none";
         }
@@ -240,6 +263,6 @@ function PublicationCard({ pub, index, expanded, onToggle, inView }: {
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
